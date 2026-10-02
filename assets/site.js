@@ -72,7 +72,7 @@ if(form){
  window.addEventListener('resize',()=>{if(activeDate)placeCalendar()});
  window.addEventListener('scroll',()=>{if(activeDate)placeCalendar()},{passive:true});
  [earlyArrival,lateDeparture].forEach(option=>option.addEventListener('change',()=>{estimate.hidden=true}));
- form.addEventListener('submit',e=>{e.preventDefault();if(!arrival.value||!departure.value||departure.value<=arrival.value){error.textContent=!arrival.value?'Choisissez votre date d’arrivée.':!departure.value?'Choisissez votre date de départ.':'Le départ doit être après l’arrivée.';error.hidden=false;estimate.hidden=true;requestPanel.hidden=true;openCalendar(!arrival.value?'arrivee':'depart');return}error.hidden=true;const start=fromISO(arrival.value),end=fromISO(departure.value);let fixed=0,flex=0,nights=0;for(let d=new Date(start);d<end;d.setDate(d.getDate()+1)){const weekend=[5,6].includes(d.getDay());fixed+=weekend?75:70;flex+=weekend?84:78;nights++}const extras=(earlyArrival.checked?5:0)+(lateDeparture.checked?5:0);fixed+=extras;flex+=extras;const selected=[earlyArrival.checked?'arrivée dès 14 h (+ 5 €)':null,lateDeparture.checked?'départ jusqu’à 12 h (+ 5 €)':null].filter(Boolean);const euro=n=>n.toLocaleString('fr-FR')+' €';estimate.innerHTML=`<strong>Votre séjour · ${nights} nuit${nights>1?'s':''} · ${guestInput.value}</strong><p>Non remboursable : <strong>${euro(fixed)}</strong> · Remboursable : <strong>${euro(flex)}</strong></p>${selected.length?`<p>Options incluses : ${selected.join(' · ')}.</p>`:''}<p>Ménage et taxe de séjour compris. Annulation du tarif remboursable jusqu’à 24 h avant l’arrivée.</p><p>Estimation du tarif uniquement. Disponibilité et horaires à confirmer auprès de Lucas.</p>`;estimate.hidden=false;requestPanel.hidden=!requestServiceReady;
+ form.addEventListener('submit',e=>{e.preventDefault();if(!arrival.value||!departure.value||departure.value<=arrival.value){error.textContent=!arrival.value?'Choisissez votre date d’arrivée.':!departure.value?'Choisissez votre date de départ.':'Le départ doit être après l’arrivée.';error.hidden=false;estimate.hidden=true;requestPanel.hidden=true;openCalendar(!arrival.value?'arrivee':'depart');return}error.hidden=true;const start=fromISO(arrival.value),end=fromISO(departure.value);let fixed=0,flex=0,nights=0;for(let d=new Date(start);d<end;d.setDate(d.getDate()+1)){const weekend=[5,6].includes(d.getDay());fixed+=weekend?75:70;flex+=weekend?84:78;nights++}const extras=(earlyArrival.checked?5:0)+(lateDeparture.checked?5:0);fixed+=extras;flex+=extras;const selected=[earlyArrival.checked?'arrivée dès 14 h (+ 5 €)':null,lateDeparture.checked?'départ jusqu’à 12 h (+ 5 €)':null].filter(Boolean);const euro=n=>n.toLocaleString('fr-FR')+' €';estimate.innerHTML=`<strong>Votre séjour · ${nights} nuit${nights>1?'s':''} · ${guestInput.value}</strong><p>Non remboursable : <strong>${euro(fixed)}</strong> · Remboursable : <strong>${euro(flex)}</strong></p>${selected.length?`<p>Options incluses : ${selected.join(' · ')}.</p>`:''}<p>Ménage et taxe de séjour compris. Annulation du tarif remboursable jusqu’à 24 h avant l’arrivée.</p><p>Estimation du tarif uniquement. Disponibilité et horaires à confirmer auprès de Lucas.</p>`;estimate.hidden=false;requestPanel.hidden=!requestServiceReady;estimate.scrollIntoView({behavior:'smooth',block:'nearest'});
  });
  const requestPanel=document.querySelector('#request-panel'),requestMessage=document.querySelector('#request-message');
  let requestServiceReady=false;
@@ -95,7 +95,19 @@ if(form){
 
 }
 const dialog=document.querySelector('#lightbox');
-if(dialog){const large=document.querySelector('#lightbox-image'),caption=document.querySelector('#lightbox-caption');let opener;document.querySelectorAll('.photo-open').forEach(button=>button.addEventListener('click',()=>{opener=button;const img=button.querySelector('img');large.src=img.src;large.alt=img.alt;caption.textContent=img.alt;dialog.showModal();document.body.style.overflow='hidden'}));dialog.querySelector('.close').addEventListener('click',()=>dialog.close());dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.close()});dialog.addEventListener('close',()=>{document.body.style.overflow='';opener?.focus()})}
+if(dialog){
+ const large=document.querySelector('#lightbox-image'),caption=document.querySelector('#lightbox-caption');
+ const photos=Array.from(document.querySelectorAll('.photo-open'));
+ let opener,currentIndex=0;
+ const showPhoto=index=>{currentIndex=(index+photos.length)%photos.length;const img=photos[currentIndex].querySelector('img');large.src=img.src;large.alt=img.alt;caption.textContent=img.alt};
+ photos.forEach((button,index)=>button.addEventListener('click',()=>{opener=button;showPhoto(index);dialog.showModal();document.body.style.overflow='hidden'}));
+ dialog.querySelector('#lightbox-prev').addEventListener('click',()=>showPhoto(currentIndex-1));
+ dialog.querySelector('#lightbox-next').addEventListener('click',()=>showPhoto(currentIndex+1));
+ dialog.addEventListener('keydown',event=>{if(event.key==='ArrowLeft'||event.key==='ArrowRight'){event.preventDefault();showPhoto(currentIndex+(event.key==='ArrowRight'?1:-1))}});
+ dialog.querySelector('.close').addEventListener('click',()=>dialog.close());
+ dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.close()});
+ dialog.addEventListener('close',()=>{document.body.style.overflow='';opener?.focus()});
+}
 
 if(document.querySelector('#location-map') && window.L){
  const map=L.map('location-map',{scrollWheelZoom:false}).setView([47.0935619,2.3951321],15);
