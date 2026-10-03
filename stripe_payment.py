@@ -25,6 +25,7 @@ def checkout_fields(reservation_id: str, email: str, amount_eur: int, label: str
         "success_url": base_url.rstrip("/") + "/paiement.html?etat=retour",
         "cancel_url": base_url.rstrip("/") + "/paiement.html?etat=annule",
         "metadata[reservation_id]": reservation_id,
+        "metadata[purpose]": "stay",
     }
 
 
@@ -34,7 +35,7 @@ def create_checkout_session(secret_key: str, fields: dict[str, str], reservation
     request = Request("https://api.stripe.com/v1/checkout/sessions", data=urlencode(fields).encode(),
                       headers={"Authorization": f"Bearer {secret_key}",
                                "Content-Type": "application/x-www-form-urlencoded",
-                               "Idempotency-Key": "berry-checkout-" + reservation_id}, method="POST")
+                               "Idempotency-Key": "berry-checkout-" + fields.get("metadata[purpose]", "stay") + "-" + reservation_id}, method="POST")
     with urlopen(request, timeout=15) as response:
         data = json.load(response)
     if not data.get("id") or not data.get("url", "").startswith("https://checkout.stripe.com/"):
@@ -56,3 +57,22 @@ def verify_webhook(payload: bytes, signature: str, signing_secret: str, now: int
     if not any(hmac.compare_digest(expected, candidate) for candidate in signatures):
         raise ValueError("Signature Stripe incorrecte.")
     return json.loads(payload)
+
+
+def deposit_checkout_fields(reservation_id: str, email: str, base_url: str) -> dict[str, str]:
+    """Préparation d'une empreinte distincte du paiement ; à demander près de l'arrivée.
+
+    Aucune session réelle n'est créée ici. L'intégration doit vérifier la date
+    capture_before de la charge pour couvrir le séjour et le contrôle de sortie.
+    """
+    fields = checkout_fields(reservation_id, email, 300,
+                             "Empreinte bancaire — dépôt de garantie de 300 €", base_url)
+    fields.update({
+        "payment_intent_data[capture_method]": "manual",
+        "metadata[purpose]": "deposit",
+        "payment_intent_data[metadata][purpose]": "deposit",
+        "payment_intent_data[metadata][reservation_id]": reservation_id,
+        "success_url": base_url.rstrip("/") + "/paiement.html?etat=retour-caution",
+        "cancel_url": base_url.rstrip("/") + "/paiement.html?etat=caution-annulee",
+    })
+    return fields

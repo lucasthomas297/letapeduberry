@@ -403,3 +403,24 @@ p{margin:18px 0;color:var(--muted)}
 
 @media(max-width:760px){.map{height:280px}
 }
+
+/* Contact and horizontal reviews */
+.contact-page{max-width:1320px;padding:70px 4% 100px}
+.contact-layout{display:grid;grid-template-columns:1fr 1.1fr;gap:70px;align-items:start}
+.contact-intro{padding-top:22px}.contact-intro h1{font-size:clamp(36px,4vw,58px);line-height:1.12;letter-spacing:-.035em;margin:20px 0 30px}.contact-intro>p:not(.eyebrow){max-width:40ch}
+.contact-email{display:inline-flex;gap:16px;align-items:center;color:var(--gold);font-size:20px;margin-top:12px;border-bottom:1px solid #d1ad7655;padding-bottom:9px;overflow-wrap:anywhere}
+.contact-address{margin-top:46px;border-top:1px solid #d1ad7633;padding-top:14px;font-size:16px}
+.contact-card{background:linear-gradient(135deg,#2c322b,#202521);padding:36px;border:1px solid #d1ad7644;border-radius:24px;box-shadow:0 20px 50px #0003}.contact-card h2{font-size:32px}.contact-card>p{font-size:16px;margin:12px 0 28px}
+.contact-fields{display:grid;grid-template-columns:1fr 1fr;gap:20px}.contact-card label{display:block;font:14px/1.5 Arial,sans-serif;color:var(--ink);margin-bottom:20px}.contact-fields label{margin:0 0 6px}
+.contact-card input,.contact-card textarea{display:block;width:100%;min-width:0;margin-top:9px;background:#171b1980;border:1px solid #d1ad7644;border-radius:12px;padding:13px 14px;color:var(--ink);font:16px/1.5 Arial,sans-serif}.contact-card textarea{resize:vertical;min-height:150px}.contact-fields+label{margin-top:20px}
+.contact-card input:focus,.contact-card textarea:focus{outline:2px solid var(--gold);outline-offset:2px}.contact-card .contact-privacy{font:12px/1.6 Arial,sans-serif;color:var(--muted);margin:10px 0 24px}.contact-trap{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+#contact-status{font-size:15px;padding:16px;border-radius:12px;background:#171b19;border:1px solid #d1ad7644}.contact-card button:disabled{opacity:.65;cursor:wait}
+.review-carousel{max-width:1390px;margin:auto}.review-carousel .reviews{display:flex;gap:24px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:thin;scrollbar-color:#d1ad7666 transparent;padding:4px 2px 22px}
+.review-carousel .review{flex:0 0 calc((100% - 24px)/2);grid-column:auto;min-height:360px;scroll-snap-align:start}.review-carousel .review:nth-child(even){grid-column:auto}.review-carousel .review blockquote{font-size:17px}
+.review-controls{display:flex;align-items:center;justify-content:center;gap:22px;margin-top:18px}.review-controls button{border:1px solid #d1ad7666;background:#252c25;color:var(--gold);width:48px;height:48px;border-radius:50%;font-size:23px}.review-controls button:hover{background:#d1ad76;color:#171b19}.review-controls button:disabled{opacity:.3;cursor:default}.review-controls span{font:12px Arial,sans-serif;letter-spacing:.12em;color:var(--muted)}
+@media(max-width:900px){.contact-layout{grid-template-columns:1fr;gap:36px}.contact-intro h1{max-width:20ch}.contact-address{margin-top:24px}.contact-page{padding-top:38px}.navlinks{gap:19px}}
+@media(max-width:640px){.contact-card{padding:24px 20px}.contact-fields{grid-template-columns:1fr;gap:10px}.contact-email{font-size:17px}.review-carousel .review{flex-basis:90%;padding:26px 23px}.review-carousel .review-top{flex-wrap:wrap;gap:12px}.contact-page{padding-bottom:60px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.reviews{scroll-behavior:auto}}
+.request-consent{display:flex!important;align-items:flex-start;gap:12px;font-size:15px;line-height:1.6;margin:22px 0}
+.request-consent input{width:18px!important;height:18px;flex:none;accent-color:var(--gold);margin:4px 0 0!important;padding:0!important}
+.request-consent a{text-decoration:underline;text-underline-offset:4px;color:var(--gold)}

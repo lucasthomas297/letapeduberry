@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import worker from './contact-worker.mjs';
+const env={RESEND_API_KEY:'mock',CONTACT_FROM:'site@messages.letapeduberry.fr',CONTACT_RATE_LIMITER:{limit:async()=>({success:true})}};
+const body={firstName:'Alice',lastName:'Test',email:'alice@example.org',phone:'+33612345678',message:'Bonjour, une question sur le séjour.',website:''};
+const request=(data=body,origin='https://letapeduberry.fr')=>new Request('https://letapeduberry.fr/api/contact',{method:'POST',headers:{Origin:origin,'Content-Type':'application/json'},body:JSON.stringify(data)});
+let sends=0;globalThis.fetch=async(url,options)=>{sends++;assert.equal(url,'https://api.resend.com/emails');const payload=JSON.parse(options.body);assert.deepEqual(payload.to,['contact@letapeduberry.fr']);assert.equal(payload.reply_to,body.email);return Response.json({id:'mock-id'});};
+assert.equal((await worker.fetch(request(),{})).status,503);
+assert.equal((await worker.fetch(request(body,'https://other.example'),env)).status,403);
+assert.equal((await worker.fetch(request({...body,email:'a\nb@example.org'}),env)).status,400);
+assert.equal((await worker.fetch(request({...body,website:'spam.example'}),env)).status,400);
+assert.equal((await worker.fetch(request({...body,message:'x'.repeat(21000)}),env)).status,413);
+assert.equal((await worker.fetch(request(),{...env,CONTACT_RATE_LIMITER:{limit:async()=>({success:false})}})).status,429);
+assert.equal(sends,0);
+const ok=await worker.fetch(request(),env);assert.equal(ok.status,200);assert.deepEqual(await ok.json(),{sent:true});assert.equal(sends,1);
+globalThis.fetch=async()=>Response.json({error:'failure'},{status:500});assert.equal((await worker.fetch(request(),env)).status,502);
+console.log('8 contrôles réussis ; aucun envoi réel.');

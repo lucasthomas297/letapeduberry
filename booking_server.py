@@ -23,7 +23,7 @@ from booking_calendar import (
 
 ROOT = Path(__file__).resolve().parent
 PAGES = {"/": "index.html", "/index.html": "index.html", "/appartement.html": "appartement.html",
-         "/photos.html": "photos.html", "/adresses.html": "adresses.html"}
+         "/contact.html": "contact.html", "/photos.html": "photos.html", "/adresses.html": "adresses.html"}
 TYPES = {".html": "text/html", ".css": "text/css", ".js": "text/javascript",
          ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png",
          ".svg": "image/svg+xml", ".webp": "image/webp", ".woff2": "font/woff2"}
@@ -65,6 +65,8 @@ def busy_ranges() -> list[tuple[dt.date, dt.date]]:
 def validate_request(raw: dict) -> dict:
     if not isinstance(raw, dict):
         raise ValueError("Demande invalide.")
+    if raw.get("rulesAccepted") is not True:
+        raise ValueError("Veuillez accepter le règlement intérieur avant d’envoyer votre demande.")
     details = {key: raw.get(key) for key in ("arrival", "departure", "rate", "name", "email", "phone", "guests", "payment")}
     if any(not isinstance(details[key], str) for key in ("arrival", "departure", "rate", "name", "email", "phone", "payment")):
         raise ValueError("Veuillez compléter les informations demandées.")
@@ -82,6 +84,7 @@ def validate_request(raw: dict) -> dict:
     if start < dt.date.today() or start > dt.date.today() + dt.timedelta(days=365):
         raise ValueError("Date d’arrivée invalide.")
     price_stay(details["arrival"], details["departure"], details["rate"], details["early"], details["late"])
+    details["rulesAccepted"] = True
     return details
 
 
@@ -101,6 +104,7 @@ def notify_owner(identifier: str, details: dict) -> None:
         f"Départ tardif : {'oui' if details['late'] else 'non'}",
         f"Paiement souhaité : {details['payment']}",
         f"Nom : {details['name']}", f"E-mail : {details['email']}", f"Téléphone : {details['phone']}",
+        "Règlement intérieur accepté par le voyageur (preuve horodatée conservée).",
         "Cette demande reste en attente de votre validation."
     )))
     with smtplib.SMTP(os.environ["BERRY_SMTP_HOST"], int(os.environ.get("BERRY_SMTP_PORT", "587")), timeout=12) as smtp:
@@ -195,6 +199,7 @@ class Handler(BaseHTTPRequestHandler):
                 notify_owner(identifier, details)
             except Exception:
                 with sqlite3.connect(database_path()) as db:
+                    db.execute("DELETE FROM request_consents WHERE reservation_id=?", (identifier,))
                     db.execute("DELETE FROM request_details WHERE reservation_id=?", (identifier,))
                     db.execute("DELETE FROM reservations WHERE id=?", (identifier,))
                 raise

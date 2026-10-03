@@ -61,10 +61,13 @@ END:VCALENDAR"""
             init_database(path)
             identifier = add_booking_request(path, {"arrival": "2026-10-02", "departure": "2026-10-05",
                 "rate": "fixed", "early": True, "late": False, "name": "Test Client",
-                "email": "client@example.org", "phone": "0102030405", "guests": 2, "payment": "cash"})
+                "email": "client@example.org", "phone": "0102030405", "guests": 2, "payment": "cash", "rulesAccepted": True})
             with sqlite3.connect(path) as db:
                 self.assertEqual(db.execute("SELECT status FROM reservations WHERE id=?", (identifier,)).fetchone()[0], "pending")
                 self.assertEqual(db.execute("SELECT total_eur FROM request_details WHERE reservation_id=?", (identifier,)).fetchone()[0], 225)
+                consent = db.execute("SELECT rules_version, accepted_at FROM request_consents WHERE reservation_id=?", (identifier,)).fetchone()
+                self.assertEqual(consent[0], "2026-10-03")
+                self.assertIsNotNone(dt.datetime.fromisoformat(consent[1]).tzinfo)
             self.assertEqual(direct_calendar(path).count("BEGIN:VEVENT"), 0)
 
 

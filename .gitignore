@@ -7,3 +7,8 @@ __pycache__/
 *.sqlite3
 work/
 outputs/
+
+# Local credentials for the contact Worker
+.dev.vars
+.dev.vars.*
+.wrangler/

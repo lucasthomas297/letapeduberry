@@ -79,12 +79,13 @@ if(form){
  fetch('/api/status').then(response=>response.ok?response.json():null).then(data=>{requestServiceReady=Boolean(data?.requests_ready);if(requestServiceReady&&!estimate.hidden)requestPanel.hidden=false}).catch(()=>{});
  document.querySelector('#request-send').addEventListener('click',async()=>{
   const name=document.querySelector('#request-name'),email=document.querySelector('#request-email'),phone=document.querySelector('#request-phone');
-  if(!name.reportValidity()||!email.reportValidity()||!phone.reportValidity())return;
+  const rules=document.querySelector('#request-rules');
+  if(!name.reportValidity()||!email.reportValidity()||!phone.reportValidity()||!rules.reportValidity())return;
   const button=document.querySelector('#request-send');button.disabled=true;requestMessage.textContent='Envoi en cours…';
   const payload={arrival:arrival.value,departure:departure.value,guests:guestInput.value.startsWith('1')?1:2,
    early:earlyArrival.checked,late:lateDeparture.checked,rate:document.querySelector('#request-rate').value,
    name:name.value.trim(),email:email.value.trim(),phone:phone.value.trim(),
-   payment:document.querySelector('input[name="payment_preference"]:checked').value};
+   payment:document.querySelector('input[name="payment_preference"]:checked').value,rulesAccepted:rules.checked};
   try{
    const response=await fetch('/api/request',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
    if(!response.ok){const data=await response.json().catch(()=>({}));throw new Error(data.error||'Le service de demande est momentanément indisponible.');}
@@ -115,4 +116,16 @@ if(document.querySelector('#location-map') && window.L){
  const icon=L.divIcon({className:'stay-pin',iconSize:[32,32],iconAnchor:[16,32],popupAnchor:[0,-30]});
  L.marker([47.0935619,2.3951321],{icon,title:'L’Étape du Berry',alt:'16 Place du Général Leclerc, Bourges'}).addTo(map).bindPopup('<strong>L’Étape du Berry</strong><br>16 Place du Général Leclerc<br>18000 Bourges');
  document.querySelector('#location-map .leaflet-control-zoom-in').setAttribute('aria-label','Agrandir la carte');document.querySelector('#location-map .leaflet-control-zoom-out').setAttribute('aria-label','Réduire la carte');
+}
+
+const reviewsTrack=document.querySelector('#reviews-track');
+if(reviewsTrack){
+ const cards=[...reviewsTrack.querySelectorAll('.review')],prev=document.querySelector('#reviews-prev'),next=document.querySelector('#reviews-next'),position=document.querySelector('#reviews-position');
+ const reduced=window.matchMedia('(prefers-reduced-motion: reduce)');
+ const current=()=>cards.reduce((best,card,index)=>Math.abs(card.offsetLeft-cards[0].offsetLeft-reviewsTrack.scrollLeft)<Math.abs(cards[best].offsetLeft-cards[0].offsetLeft-reviewsTrack.scrollLeft)?index:best,0);
+ const update=()=>{prev.disabled=reviewsTrack.scrollLeft<3;next.disabled=reviewsTrack.scrollLeft+reviewsTrack.clientWidth>=reviewsTrack.scrollWidth-3;position.textContent=`${current()+1} / ${cards.length}`;};
+ const move=direction=>{const index=Math.max(0,Math.min(cards.length-1,current()+direction));reviewsTrack.scrollTo({left:cards[index].offsetLeft-cards[0].offsetLeft,behavior:reduced.matches?'auto':'smooth'});};
+ prev.addEventListener('click',()=>move(-1));next.addEventListener('click',()=>move(1));
+ reviewsTrack.addEventListener('keydown',event=>{if(event.key==='ArrowLeft'||event.key==='ArrowRight'){event.preventDefault();move(event.key==='ArrowRight'?1:-1);}});
+ reviewsTrack.addEventListener('scroll',update,{passive:true});window.addEventListener('resize',update);update();
 }

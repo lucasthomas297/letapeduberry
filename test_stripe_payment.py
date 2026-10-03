@@ -3,7 +3,7 @@ import hmac
 import json
 import unittest
 
-from stripe_payment import checkout_fields, verify_webhook
+from stripe_payment import checkout_fields, deposit_checkout_fields, verify_webhook
 
 
 class StripePaymentTests(unittest.TestCase):
@@ -14,6 +14,15 @@ class StripePaymentTests(unittest.TestCase):
         self.assertEqual(fields["client_reference_id"], "booking-123")
         self.assertEqual(fields["payment_method_types[0]"], "card")
         self.assertEqual(fields["mode"], "payment")
+
+    def test_deposit_is_a_separate_300_euro_authorization(self):
+        fields = deposit_checkout_fields("booking-123", "client@example.org", "https://example.org")
+        self.assertEqual(fields["line_items[0][price_data][unit_amount]"], "30000")
+        self.assertEqual(fields["payment_intent_data[capture_method]"], "manual")
+        self.assertEqual(fields["metadata[purpose]"], "deposit")
+        stay = checkout_fields("booking-123", "client@example.org", 225, "Séjour", "https://example.org")
+        self.assertNotIn("payment_intent_data[capture_method]", stay)
+        self.assertNotEqual(fields["metadata[purpose]"], stay["metadata[purpose]"])
 
     def test_webhook_rejects_tampering_and_replay(self):
         payload = json.dumps({"type": "checkout.session.completed", "id": "evt_test"}).encode()

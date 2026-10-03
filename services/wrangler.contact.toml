@@ -1,0 +1,12 @@
+# Dedicated route: keep the existing website Worker unchanged.
+name = "letapeduberry-contact"
+main = "contact-worker.mjs"
+compatibility_date = "2026-10-03"
+workers_dev = false
+routes = [{ pattern = "letapeduberry.fr/api/contact", zone_name = "letapeduberry.fr" }]
+[vars]
+CONTACT_FROM = "L’Étape du Berry <site@messages.letapeduberry.fr>"
+[[ratelimits]]
+name = "CONTACT_RATE_LIMITER"
+namespace_id = "1001"
+simple = { limit = 3, period = 60 }

@@ -103,6 +103,15 @@ def init_database(path: str) -> None:
             payment_preference TEXT NOT NULL CHECK(payment_preference IN ('card','cash'))
         )""")
 
+        db.execute("""CREATE TABLE IF NOT EXISTS request_consents (
+            reservation_id TEXT PRIMARY KEY REFERENCES reservations(id),
+            rules_version TEXT NOT NULL,
+            accepted_at TEXT NOT NULL
+        )""")
+
+
+RULES_VERSION = "2026-10-03"
+
 
 def price_stay(arrival: str, departure: str, rate: str, early: bool = False, late: bool = False) -> int:
     start, end = iso_date(arrival), iso_date(departure)
@@ -118,6 +127,8 @@ def price_stay(arrival: str, departure: str, rate: str, early: bool = False, lat
 
 
 def add_booking_request(path: str, details: dict) -> str:
+    if details.get("rulesAccepted") is not True:
+        raise ValueError("Règlement intérieur non accepté.")
     arrival, departure = details["arrival"], details["departure"]
     total = price_stay(arrival, departure, details["rate"], details["early"], details["late"])
     identifier = uuid.uuid4().hex
@@ -127,6 +138,8 @@ def add_booking_request(path: str, details: dict) -> str:
         db.execute("INSERT INTO request_details VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                    (identifier, details["name"], details["email"], details["phone"], details["guests"],
                     details["rate"], int(details["early"]), int(details["late"]), total, details["payment"]))
+        db.execute("INSERT INTO request_consents VALUES (?, ?, ?)",
+                   (identifier, RULES_VERSION, dt.datetime.now(dt.timezone.utc).isoformat()))
     return identifier
 
 
