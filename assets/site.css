@@ -449,13 +449,14 @@ p{margin:18px 0;color:var(--muted)}
 /* Variante mise au point. */
 @view-transition{navigation:auto}
 .nav{view-transition-name:site-navigation}
-::view-transition-old(root){animation:berry-focus-out .3s ease both}
-::view-transition-new(root){animation:berry-focus-in .65s cubic-bezier(.2,.7,.2,1) both}
+::view-transition-old(root){animation:none;opacity:0}
+::view-transition-new(root){animation:berry-clean-fade .4s ease both;mix-blend-mode:normal}
 ::view-transition-group(site-navigation){z-index:5}
 ::view-transition-old(site-navigation),::view-transition-new(site-navigation){animation:none}
+@keyframes berry-clean-fade{from{opacity:0}to{opacity:1}}
 @keyframes berry-focus-out{to{opacity:0;filter:blur(8px)}}
 @keyframes berry-focus-in{from{opacity:0;filter:blur(18px);transform:scale(1.008)}to{opacity:1;filter:blur(0);transform:none}}
-.page-transition-fallback main{animation:berry-focus-in .65s cubic-bezier(.2,.7,.2,1) both}
+.page-transition-fallback main{animation:berry-clean-fade .4s ease both}
 .page-leaving main{transition:opacity .19s ease,filter .19s ease;opacity:0;filter:blur(8px)}
 @media(prefers-reduced-motion:reduce){::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none!important}main,.page-leaving main{animation:none!important;transition:none!important;transform:none;filter:none;opacity:1}}
 
@@ -468,7 +469,7 @@ p{margin:18px 0;color:var(--muted)}
 /* Appartement : volumes, plans superposés et cartes en relief. */
 .apartment-depth{position:relative;background:radial-gradient(ellipse at 85% 8%,#c3a27112,transparent 35%)}
 .apartment-depth .apartment-hero{gap:6%;padding-bottom:80px}
-.apartment-depth .apartment-hero>img{transform:perspective(1400px) rotateY(-7deg) rotateZ(1.5deg);border:1px solid #e1c69540;border-radius:22px;box-shadow:18px 28px 0 -9px #283229,30px 45px 70px #0009,inset 0 1px #ffffff30;transition:none}
+.apartment-depth .apartment-hero>img{transform:rotate(1.5deg);border:1px solid #e1c69540;border-radius:22px;box-shadow:18px 28px 0 -9px #283229,30px 45px 70px #0009,inset 0 1px #ffffff30;transition:none}
 .apartment-depth .apartment-highlights{position:relative;margin-top:-35px;z-index:2;background:linear-gradient(145deg,#354136,#202820);border-color:#d1ad7650;border-radius:20px;box-shadow:0 3px 0 #101810,0 20px 40px #0005,inset 0 1px #ffffff18}
 .apartment-depth .apartment-detail-grid,.apartment-depth .amenity-grid,.apartment-depth .rules-grid{perspective:1200px;gap:30px}
 .apartment-depth .apartment-detail,.apartment-depth .amenity-card{position:relative;background:linear-gradient(145deg,#303c31,#202920 70%);border-color:#d1ad763a;border-radius:22px;box-shadow:0 5px 0 #111a13,0 16px 30px #0005,inset 0 1px #ffffff18;transform:translateZ(0);transition:none}
@@ -481,4 +482,4 @@ p{margin:18px 0;color:var(--muted)}
 
 /* Perspective intégrée à la photo : stable pendant le fondu global. */
 .page-transition-fallback main.apartment-depth,.page-leaving main.apartment-depth{animation:none;transition:none;transform:none;filter:none;opacity:1}
-@media(prefers-reduced-motion:no-preference){.page-transition-fallback .apartment-depth .apartment-hero-copy,.page-transition-fallback .apartment-depth>section:not(.apartment-hero){animation:berry-focus-in .65s cubic-bezier(.2,.7,.2,1) both}}
+@media(prefers-reduced-motion:no-preference){.page-transition-fallback .apartment-depth .apartment-hero-copy,.page-transition-fallback .apartment-depth>section:not(.apartment-hero){animation:berry-clean-fade .4s ease both}}
