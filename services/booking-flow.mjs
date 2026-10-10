@@ -2,6 +2,7 @@ import {depositMethod,depositSummary,bankAuthorizationMode} from './deposit-poli
 import {cashDepositAction} from './cash-deposit.mjs';
 import {depositDeadline} from './deposit-deadline.mjs';
 import {ownerHealth} from './owner-health.mjs';
+import {sendDeliveryTest,deliveryTestPage} from './mail-delivery-test.mjs';
 import {boundedDeadline,parisArrivalAt} from './booking-timing.mjs';
 import {damageAction} from './damage.mjs';
 import {contractPdf,descriptionPdf} from './contract-pdf.mjs';
@@ -36,6 +37,14 @@ export async function flowFetch(request,env) {
  const url=new URL(request.url),path=url.pathname;
  if(path.startsWith('/api/admin/')) {
   if(!await adminAuthorized(request,env))return json(403,{error:'Connexion privée requise.'});
+  if(path==='/api/admin/mail-test') {
+   if(request.method==='GET')return deliveryTestPage();
+   if(request.method!=='POST')return json(405,{error:'Méthode interdite'});
+   if(!originOK(request))return json(403,{error:'Origine interdite'});
+   const {sendQueuedMail}=await import('./request-worker.mjs');
+   const result=await sendDeliveryTest(env,sendQueuedMail);
+   return result.accepted?deliveryTestPage(true):json(503,{error:'Le message test n’a pas été accepté. Aucun dossier créé.'});
+  }
   if(path==='/api/admin/health')return request.method==='GET'?json(200,await ownerHealth(env)):json(405,{error:'Méthode interdite'});
   if(path==='/api/admin/contract.pdf' || path==='/api/admin/description.pdf') {
    if(request.method!=='GET')return json(405,{error:'Méthode interdite'});

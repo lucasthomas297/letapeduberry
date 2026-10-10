@@ -287,7 +287,7 @@ test('queued acceptance email retains its private contract link and deadline',as
  db.prepare('INSERT INTO mail_outbox(id,stay_id,kind,created_at,payload) VALUES (?,?,?,?,?)').run('mail','stay','payment_link',time,JSON.stringify({url:link,deadline:'2026-11-01T12:00:00Z'}));
  function prepare(sql,args=[]){return {bind:(...values)=>prepare(sql,values),all:async()=>({results:db.prepare(sql).all(...args)}),run:async()=>db.prepare(sql).run(...args)};}
  const original=globalThis.fetch;let sent;globalThis.fetch=async(url,options)=>{sent=JSON.parse(options.body);return Response.json({id:'email-test'});};
- try{await sendQueuedMail({BERRY_DB:{prepare},RESEND_API_KEY:'test',CONTACT_FROM:'site@example.test'});assert.ok(sent.text.includes(link));assert.ok(sent.text.includes('2026-11-01T12:00:00Z'));assert.ok(!sent.text.includes('undefined'));assert.ok(db.prepare('SELECT sent_at FROM mail_outbox').get().sent_at);}finally{globalThis.fetch=original;db.close();}
+ try{await sendQueuedMail({BERRY_DB:{prepare},RESEND_API_KEY:'test',CONTACT_FROM:'site@example.test'});assert.ok(sent.text.includes(link));assert.ok(sent.text.includes('1 novembre 2026 à 13 h 00 (heure de Paris)'));assert.ok(!sent.text.includes('undefined'));assert.ok(db.prepare('SELECT sent_at FROM mail_outbox').get().sent_at);}finally{globalThis.fetch=original;db.close();}
 });
 
 test('deposit request is due exactly 48 hours before Paris arrival, including DST',()=>{
