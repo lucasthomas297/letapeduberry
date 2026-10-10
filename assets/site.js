@@ -14,6 +14,25 @@ if(form){
  const dateLabel=value=>new Intl.DateTimeFormat('fr-FR',{day:'numeric',month:'long',year:'numeric'}).format(fromISO(value));
  const today=iso(new Date());
  let activeDate=null,viewMonth=new Date(new Date().getFullYear(),new Date().getMonth(),1);
+ let busyPeriods=[],availabilityState='loading',availabilityCheckedAt=0,availabilityTask=null;
+ const overlapsBusy=(start,end)=>busyPeriods.some(([a,b])=>start<b&&end>a);
+ const unavailableDate=(value,field)=>field==='depart'&&arrival.value?overlapsBusy(arrival.value,value):busyPeriods.some(([a,b])=>value>=a&&value<b);
+ async function loadAvailability(){
+  if(availabilityTask)return availabilityTask;
+  if(availabilityState==='ready'&&Date.now()-availabilityCheckedAt<60000)return;
+  availabilityState='loading';
+  availabilityTask=(async()=>{
+   try{
+    const response=await fetch('/api/availability',{cache:'no-store',signal:AbortSignal.timeout(15000)});
+    if(!response.ok)throw Error('Disponibilités indisponibles');
+    const data=await response.json();
+    if(!Array.isArray(data.busy)||!data.busy.every(period=>Array.isArray(period)&&period.length===2&&period.every(value=>/^\d{4}-\d{2}-\d{2}$/.test(value))&&period[0]<period[1]))throw Error('Disponibilités invalides');
+    busyPeriods=data.busy;availabilityState='ready';availabilityCheckedAt=Date.now();
+   }catch{availabilityState='error';}
+   finally{availabilityTask=null;if(activeDate)renderCalendar();}
+  })();
+  return availabilityTask;
+ }
  const minDate=field=>{if(field!=='depart'||!arrival.value)return today;const next=fromISO(arrival.value);next.setDate(next.getDate()+1);return iso(next)};
  const closeCalendar=()=>{calendar.hidden=true;if(activeDate)dateTriggers[activeDate].setAttribute('aria-expanded','false');activeDate=null};
  const closeGuests=()=>{guestMenu.hidden=true;guestTrigger.setAttribute('aria-expanded','false')};
@@ -28,26 +47,26 @@ if(form){
   for(let i=0;i<offset;i++)calendarDays.append(document.createElement('span'));
   for(let day=1;day<=new Date(year,month+1,0).getDate();day++){
    const value=iso(new Date(year,month,day)),button=document.createElement('button');
-   button.type='button';button.textContent=day;button.disabled=value<min;
+   button.type='button';button.textContent=day;button.disabled=value<min||availabilityState!=='ready'||unavailableDate(value,activeDate);
    button.setAttribute('aria-label',dateLabel(value));
    if(value===selected){button.classList.add('is-selected');button.setAttribute('aria-pressed','true')}
    if(value===today)button.classList.add('is-today');
    button.addEventListener('click',event=>{
     event.stopPropagation();
-    form.elements[activeDate].value=value;
+    form.elements[activeDate].value=value;updateGuarantee();
     dateValues[activeDate].textContent=dateLabel(value);
     dateValues[activeDate].classList.remove('booking-placeholder');
     estimate.hidden=true;requestPanel.hidden=true;error.hidden=true;
     const chosen=activeDate;
     closeCalendar();
     if(chosen==='arrivee'){
-     if(departure.value<=value){departure.value='';dateValues.depart.textContent='Choisir une date';dateValues.depart.classList.add('booking-placeholder')}
+     if(departure.value<=value||overlapsBusy(value,departure.value)){departure.value='';dateValues.depart.textContent='Choisir une date';dateValues.depart.classList.add('booking-placeholder')}
      if(!departure.value)openCalendar('depart');
     }
    });
    calendarDays.append(button);
   }
-  calendarHint.textContent=activeDate==='arrivee'?'Sélectionnez votre jour d’arrivée':'Sélectionnez votre jour de départ';
+  calendarHint.textContent=availabilityState==='loading'?'Vérification des disponibilités…':availabilityState==='error'?'Disponibilités momentanément indisponibles. Fermez puis rouvrez le calendrier pour réessayer.':activeDate==='arrivee'?'Sélectionnez votre jour d’arrivée':'Sélectionnez votre jour de départ. Le jour du départ reste réservable.';
   placeCalendar();
  };
  function openCalendar(field){
@@ -57,6 +76,7 @@ if(form){
   calendar.hidden=false;dateTriggers[field].setAttribute('aria-expanded','true');
   calendar.setAttribute('aria-label',field==='arrivee'?'Choisir la date d’arrivée':'Choisir la date de départ');
   renderCalendar();
+  void loadAvailability();
  }
  Object.entries(dateTriggers).forEach(([field,trigger])=>trigger.addEventListener('click',()=>activeDate===field?closeCalendar():openCalendar(field)));
  document.querySelector('#calendar-prev').addEventListener('click',()=>{viewMonth.setMonth(viewMonth.getMonth()-1);renderCalendar()});
@@ -72,26 +92,55 @@ if(form){
  window.addEventListener('resize',()=>{if(activeDate)placeCalendar()});
  window.addEventListener('scroll',()=>{if(activeDate)placeCalendar()},{passive:true});
  [earlyArrival,lateDeparture].forEach(option=>option.addEventListener('change',()=>{estimate.hidden=true}));
- form.addEventListener('submit',e=>{e.preventDefault();if(!arrival.value||!departure.value||departure.value<=arrival.value){error.textContent=!arrival.value?'Choisissez votre date d’arrivée.':!departure.value?'Choisissez votre date de départ.':'Le départ doit être après l’arrivée.';error.hidden=false;estimate.hidden=true;requestPanel.hidden=true;openCalendar(!arrival.value?'arrivee':'depart');return}error.hidden=true;const start=fromISO(arrival.value),end=fromISO(departure.value);let fixed=0,flex=0,nights=0;for(let d=new Date(start);d<end;d.setDate(d.getDate()+1)){const weekend=[5,6].includes(d.getDay());fixed+=weekend?75:70;flex+=weekend?84:78;nights++}const extras=(earlyArrival.checked?5:0)+(lateDeparture.checked?5:0);fixed+=extras;flex+=extras;const selected=[earlyArrival.checked?'arrivée dès 14 h (+ 5 €)':null,lateDeparture.checked?'départ jusqu’à 12 h (+ 5 €)':null].filter(Boolean);const euro=n=>n.toLocaleString('fr-FR')+' €';estimate.innerHTML=`<strong>Votre séjour · ${nights} nuit${nights>1?'s':''} · ${guestInput.value}</strong><p>Non remboursable : <strong>${euro(fixed)}</strong> · Remboursable : <strong>${euro(flex)}</strong></p>${selected.length?`<p>Options incluses : ${selected.join(' · ')}.</p>`:''}<p>Ménage et taxe de séjour compris. Annulation du tarif remboursable jusqu’à 24 h avant l’arrivée.</p><p>Estimation du tarif uniquement. Disponibilité et horaires à confirmer auprès de nous.</p>`;estimate.hidden=false;requestPanel.hidden=!requestServiceReady;estimate.scrollIntoView({behavior:'smooth',block:'nearest'});
+ form.addEventListener('submit',async e=>{e.preventDefault();await loadAvailability();if(availabilityState!=='ready'||(arrival.value&&departure.value&&overlapsBusy(arrival.value,departure.value))){error.textContent=availabilityState!=='ready'?'Impossible de vérifier les disponibilités pour le moment. Veuillez réessayer.':'Ces dates ne sont plus disponibles. Choisissez une autre période.';error.hidden=false;estimate.hidden=true;requestPanel.hidden=true;return}if(!arrival.value||!departure.value||departure.value<=arrival.value){error.textContent=!arrival.value?'Choisissez votre date d’arrivée.':!departure.value?'Choisissez votre date de départ.':'Le départ doit être après l’arrivée.';error.hidden=false;estimate.hidden=true;requestPanel.hidden=true;openCalendar(!arrival.value?'arrivee':'depart');return}error.hidden=true;updateGuarantee();const start=fromISO(arrival.value),end=fromISO(departure.value);let fixed=0,flex=0,nights=0;for(let d=new Date(start);d<end;d.setDate(d.getDate()+1)){const weekend=[5,6].includes(d.getDay());fixed+=weekend?75:70;flex+=weekend?84:78;nights++}const extras=(earlyArrival.checked?5:0)+(lateDeparture.checked?5:0);fixed+=extras;flex+=extras;const selected=[earlyArrival.checked?'arrivée dès 14 h (+ 5 €)':null,lateDeparture.checked?'départ jusqu’à 12 h (+ 5 €)':null].filter(Boolean);const euro=n=>n.toLocaleString('fr-FR')+' €';estimate.innerHTML=`<strong>Votre séjour · ${nights} nuit${nights>1?'s':''} · ${guestInput.value}</strong><p>Non remboursable : <strong>${euro(fixed)}</strong> · Remboursable : <strong>${euro(flex)}</strong></p>${selected.length?`<p>Options incluses : ${selected.join(' · ')}.</p>`:''}<p>Ménage et taxe de séjour compris. Annulation du tarif remboursable jusqu’à 24 h avant l’arrivée.</p><p>Estimation du tarif uniquement. Disponibilité et horaires à confirmer auprès de nous.</p>`;estimate.hidden=false;requestPanel.hidden=!(requestServiceReady||localRequestPreview);estimate.scrollIntoView({behavior:'smooth',block:'nearest'});
  });
  const requestPanel=document.querySelector('#request-panel'),requestMessage=document.querySelector('#request-message');
+ const requestConfirmation=document.querySelector('#request-confirmation');
+ document.querySelector('#request-confirmation-close').addEventListener('click',()=>requestConfirmation.close());
+ requestConfirmation.addEventListener('close',()=>{requestMessage.tabIndex=-1;requestMessage.focus({preventScroll:true});});
+ const localRequestPreview=['127.0.0.1','localhost'].includes(location.hostname)&&new URL(location.href).searchParams.get('apercu')==='reservation';
  let requestServiceReady=false;
+ const requestSend=document.querySelector('#request-send');
+ const requestConsents=['request-rules','request-deposit','request-insurance'].map(id=>document.getElementById(id));
+ let requestSending=false;
+ let guaranteePolicy='';
+ function updateGuarantee(){
+  const nights=(Date.parse(departure.value)-Date.parse(arrival.value))/86400000;
+  const method=Number.isInteger(nights)&&nights>0?(nights>3?'cash':'bank'):'';
+  const label=document.querySelector('#request-deposit-text');
+  if(!label)return;
+  if(method!==guaranteePolicy){document.querySelector('#request-deposit').checked=false;guaranteePolicy=method;}
+  label.textContent=method==='cash'?'J’accepte le dépôt de garantie de 300 € en espèces, distinct du prix du séjour, remis en main propre lors d’un rendez-vous le jour de l’arrivée à partir de 17 h 30, contre reçu, puis restitué en main propre le jour du départ après contrôle du logement et sous déduction des frais justifiés pour dommages. L’arrivée autonome et l’option dès 14 h restent possibles.':'J’accepte l’empreinte bancaire standard de 300 € pour le dépôt de garantie, demandée 48 heures avant l’arrivée ou dès la confirmation si celle-ci intervient dans ce délai, distincte du prix du séjour. Le contrat précisera ses modalités et les conséquences d’un refus avant tout paiement.';
+  updateRequestButton();
+ }
+ ['arrivee','depart'].forEach(name=>form.elements[name].addEventListener('change',updateGuarantee));
+ const updateRequestButton=()=>{requestSend.disabled=requestSending||!requestConsents.every(input=>input.checked);};
+ requestConsents.forEach(input=>input.addEventListener('change',updateRequestButton));
+ window.addEventListener('pageshow',updateRequestButton);
+ updateRequestButton();
+ if(localRequestPreview){requestPanel.hidden=false;requestMessage.textContent='Aperçu local du formulaire : aucune demande ni aucun paiement ne sera envoyé.';}
+ let lastRequestBody='',lastRequestKey='';
  fetch('/api/status').then(response=>response.ok?response.json():null).then(data=>{requestServiceReady=Boolean(data?.requests_ready);if(requestServiceReady&&!estimate.hidden)requestPanel.hidden=false}).catch(()=>{});
  document.querySelector('#request-send').addEventListener('click',async()=>{
+  if(localRequestPreview||requestSending||requestSend.disabled)return;
   const name=document.querySelector('#request-name'),email=document.querySelector('#request-email'),phone=document.querySelector('#request-phone');
-  const rules=document.querySelector('#request-rules');
-  if(!name.reportValidity()||!email.reportValidity()||!phone.reportValidity()||!rules.reportValidity())return;
-  const button=document.querySelector('#request-send');button.disabled=true;requestMessage.textContent='Envoi en cours…';
+  const insurance=document.querySelector('#request-insurance'),rules=document.querySelector('#request-rules'),deposit=document.querySelector('#request-deposit'),address=document.querySelector('#request-address'),comment=document.querySelector('#request-comment');
+  if(!name.reportValidity()||!email.reportValidity()||!phone.reportValidity()||!rules.reportValidity()||!deposit.reportValidity()||!address.reportValidity()||!comment.reportValidity()||!insurance.reportValidity())return;
+  const button=requestSend;requestSending=true;updateRequestButton();requestMessage.textContent='Envoi en cours…';
   const payload={arrival:arrival.value,departure:departure.value,guests:guestInput.value.startsWith('1')?1:2,
    early:earlyArrival.checked,late:lateDeparture.checked,rate:document.querySelector('#request-rate').value,
    name:name.value.trim(),email:email.value.trim(),phone:phone.value.trim(),
-   payment:document.querySelector('input[name="payment_preference"]:checked').value,rulesAccepted:rules.checked};
+   payment:document.querySelector('input[name="payment_preference"]:checked').value,rulesAccepted:rules.checked,insuranceAccepted:insurance.checked,depositAccepted:deposit.checked,address:address.value.trim(),comment:comment.value.trim()};
   try{
-   const response=await fetch('/api/request',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+   const body=JSON.stringify(payload);
+   if(body!==lastRequestBody){lastRequestBody=body;lastRequestKey=crypto.randomUUID();}
+   const response=await fetch('/api/request',{method:'POST',headers:{'Content-Type':'application/json','Idempotency-Key':lastRequestKey},body});
    if(!response.ok){const data=await response.json().catch(()=>({}));throw new Error(data.error||'Le service de demande est momentanément indisponible.');}
    const data=await response.json();requestMessage.textContent=`Demande envoyée (référence ${data.reference}). Nous vous répondrons par e-mail. Aucun paiement n’a été effectué.`;
    button.hidden=true;
-  }catch(error){requestMessage.textContent=error.message;button.disabled=false;}
+   document.querySelector('#request-confirmation-reference').textContent='Référence : '+data.reference;
+   requestConfirmation.showModal();
+  }catch(error){requestMessage.textContent=error.message;}finally{requestSending=false;updateRequestButton();}
  });
 
 }

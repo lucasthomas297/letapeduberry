@@ -1,0 +1,3 @@
+ALTER TABLE deposits ADD COLUMN attempt INTEGER NOT NULL DEFAULT 1;
+ALTER TABLE deposits ADD COLUMN checked_at TEXT;
+ALTER TABLE deposits ADD COLUMN released_at TEXT;

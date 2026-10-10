@@ -1,0 +1,43 @@
+# Publication candidate only. Do not deploy before owner approval.
+# All public booking/payment/message activation switches remain false.
+name = "letapeduberry-reservation"
+main = "request-worker.mjs"
+compatibility_date = "2026-10-04"
+workers_dev = false
+routes = [
+ { pattern = "letapeduberry.fr/api/stripe/webhook", zone_name = "letapeduberry.fr" },
+ { pattern = "letapeduberry.fr/api/availability", zone_name = "letapeduberry.fr" },
+ { pattern = "letapeduberry.fr/api/status", zone_name = "letapeduberry.fr" },
+ { pattern = "letapeduberry.fr/api/request", zone_name = "letapeduberry.fr" },
+ { pattern = "letapeduberry.fr/api/admin/*", zone_name = "letapeduberry.fr" },
+ { pattern = "letapeduberry.fr/api/guest/*", zone_name = "letapeduberry.fr" },
+ { pattern = "letapeduberry.fr/calendrier/direct/*", zone_name = "letapeduberry.fr" }
+]
+[[d1_databases]]
+binding = "BERRY_DB"
+database_name = "letapeduberry-reservations"
+database_id = "92034594-f295-4110-b6a9-7149f5666fcf"
+migrations_dir = "migrations"
+[vars]
+# Enable only after Stripe confirms account eligibility; actual capture_before is still checked.
+STRIPE_EXTENDED_AUTHORIZATION_ENABLED = "false"
+STRIPE_MODE = "live"
+STRIPE_WEBHOOK_ENABLED = "true"
+STRIPE_LIVE_ENABLED = "false"
+REQUESTS_ENABLED = "false"
+GUEST_MESSAGES_ENABLED = "false"
+CONTRACT_APPROVED = "false"
+SITE_ORIGIN = "https://letapeduberry.fr"
+CONTACT_FROM = "L’Étape du Berry <site@messages.letapeduberry.fr>"
+# Incoming signed Stripe events only; outgoing live payments remain disabled.
+# Configure Access issuer/AUD/email, owner details, calendar and Resend
+# before any public reservation or scheduled guest message activation.
+# Routes must target the exact API paths; do not replace /api/contact.
+# Protect /gestion, /gestion.html, /api/admin and /api/admin/* with Access.
+# Restrict to the exact owner email; see access-setup.md before activation.
+[triggers]
+crons = ["*/5 * * * *"]
+[[ratelimits]]
+name = "REQUEST_RATE_LIMITER"
+namespace_id = "1002"
+simple = { limit = 3, period = 60 }

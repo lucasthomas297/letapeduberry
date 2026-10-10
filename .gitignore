@@ -12,3 +12,9 @@ outputs/
 .dev.vars
 .dev.vars.*
 .wrangler/
+
+# Private document previews
+output/
+
+# PDF visual review scratch files (may contain personal data)
+tmp/pdfs/

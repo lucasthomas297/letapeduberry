@@ -159,6 +159,8 @@ p{margin:18px 0;color:var(--muted)}
 .photo-grid .photo-original .photo-open,.discoveries .photo-open{height:auto;aspect-ratio:4/3}
 .photo-original .photo-open img,.discoveries .photo-open img{object-fit:contain}
 .photo-original .photo-open:hover img,.discoveries .photo-open:hover img{transform:none}
+.photo-original .photo-open,.discoveries .photo-open{transition:transform .3s}
+.photo-original .photo-open:hover,.discoveries .photo-open:hover{transform:scale(1.035)}
 .photo-grid figcaption{font:13px/1.5 Arial,sans-serif;color:var(--muted);margin-top:10px}
 /* Une visite en images, avec des formats variés et des décalages doux. */
 .photo-grid.photo-mosaic{align-items:start;gap:40px 28px;counter-reset:photo}
@@ -372,6 +374,7 @@ p{margin:18px 0;color:var(--muted)}
 
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}
 .photo-open img{transition:none}
+.photo-original .photo-open,.discoveries .photo-open{transition:none}
 }
 
 
@@ -424,3 +427,19 @@ p{margin:18px 0;color:var(--muted)}
 .request-consent{display:flex!important;align-items:flex-start;gap:12px;font-size:15px;line-height:1.6;margin:22px 0}
 .request-consent input{width:18px!important;height:18px;flex:none;accent-color:var(--gold);margin:4px 0 0!important;padding:0!important}
 .request-consent a{text-decoration:underline;text-underline-offset:4px;color:var(--gold)}
+/* Booking request additions */
+.request-comment textarea{display:block;width:100%;margin-top:10px;padding:14px;border:1px solid #a99164;border-radius:12px;background:#fff;color:#29322e;font:inherit;resize:vertical}
+
+#request-send:disabled{background:#626763;color:#d9dcd9;border-color:#737973;cursor:not-allowed;filter:none;box-shadow:none;opacity:1}
+
+/* Confirmation visible only after the reservation request is saved successfully. */
+.request-confirmation{width:min(520px,calc(100vw - 32px));max-height:calc(100dvh - 40px);overflow:auto;padding:36px;border:1px solid var(--line);border-radius:24px;background:var(--panel);color:var(--ink);text-align:center;box-shadow:0 24px 90px #0007}
+.request-confirmation::backdrop{background:#0b120dcc;backdrop-filter:blur(5px)}
+.request-confirmation-icon{display:grid;place-items:center;width:64px;height:64px;margin:0 auto 20px;border:1px solid var(--gold);border-radius:50%;background:#d1ad7612;color:var(--gold)}
+.request-confirmation-icon svg{width:34px;height:34px;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.request-confirmation h2{margin:0 0 18px;font-size:30px;line-height:1.2;color:var(--ink)}
+.request-confirmation p{margin:12px 0;color:var(--muted);font-size:17px;line-height:1.55}
+.request-confirmation .request-confirmation-reference{font:14px/1.5 system-ui,sans-serif;color:var(--gold);overflow-wrap:anywhere}
+.request-confirmation .request-confirmation-note{font-size:15px}
+.request-confirmation .btn{margin-top:16px;border-radius:12px;min-width:160px}
+@media(max-width:600px){.request-confirmation{padding:28px 22px}.request-confirmation h2{font-size:26px}}

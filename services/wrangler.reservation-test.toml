@@ -1,0 +1,34 @@
+# Isolated Stripe delivery check authorized by the owner on 10 October 2026.
+name = "letapeduberry-reservation-test"
+main = "request-worker.mjs"
+compatibility_date = "2026-10-04"
+workers_dev = true
+routes = []
+
+[[d1_databases]]
+binding = "BERRY_DB"
+database_name = "letapeduberry-reservations-test"
+database_id = "6d514866-2f54-4f3d-9065-686926827f97"
+migrations_dir = "migrations"
+
+[vars]
+# Enable only after Stripe confirms account eligibility; actual capture_before is still checked.
+STRIPE_EXTENDED_AUTHORIZATION_ENABLED = "false"
+STRIPE_MODE = "test"
+# Non-functional marker required by the incoming mode guard. This is NOT
+# a Stripe credential: no outbound API calls or Checkout creation are tested.
+# Stripe authenticates incoming notifications with STRIPE_WEBHOOK_SECRET.
+STRIPE_SECRET_KEY = "sk_test_notification_validation_only"
+STRIPE_WEBHOOK_ENABLED = "true"
+STRIPE_LIVE_ENABLED = "false"
+REQUESTS_ENABLED = "false"
+GUEST_MESSAGES_ENABLED = "false"
+CONTRACT_APPROVED = "false"
+SITE_ORIGIN = "https://letapeduberry.fr"
+# No production secrets, owner data, calendar URLs, e-mail key or door code.
+# No cron: only a manually triggered Stripe sandbox notification is tested.
+
+[[ratelimits]]
+name = "REQUEST_RATE_LIMITER"
+namespace_id = "1003"
+simple = { limit = 3, period = 60 }
