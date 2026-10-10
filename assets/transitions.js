@@ -17,6 +17,6 @@
     if (leaving) return;
     leaving = true;
     document.documentElement.classList.add('page-leaving');
-    setTimeout(() => location.assign(url.href), 190);
+    location.assign(url.href);
   });
 })();

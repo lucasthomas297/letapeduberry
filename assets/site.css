@@ -450,14 +450,14 @@ p{margin:18px 0;color:var(--muted)}
 @view-transition{navigation:auto}
 .nav{view-transition-name:site-navigation}
 ::view-transition-old(root){animation:none;opacity:0}
-::view-transition-new(root){animation:berry-clean-fade .4s ease both;mix-blend-mode:normal}
+::view-transition-new(root){animation:berry-clean-fade .8s cubic-bezier(.2,.7,.2,1) both;mix-blend-mode:normal}
 ::view-transition-group(site-navigation){z-index:5}
 ::view-transition-old(site-navigation),::view-transition-new(site-navigation){animation:none}
-@keyframes berry-clean-fade{from{opacity:0}to{opacity:1}}
+@keyframes berry-clean-fade{from{filter:blur(12px)}to{filter:blur(0)}}
 @keyframes berry-focus-out{to{opacity:0;filter:blur(8px)}}
 @keyframes berry-focus-in{from{opacity:0;filter:blur(18px);transform:scale(1.008)}to{opacity:1;filter:blur(0);transform:none}}
-.page-transition-fallback main{animation:berry-clean-fade .4s ease both}
-.page-leaving main{transition:opacity .19s ease,filter .19s ease;opacity:0;filter:blur(8px)}
+.page-transition-fallback main{animation:berry-clean-fade .8s cubic-bezier(.2,.7,.2,1) both}
+.page-leaving main{transition:none;opacity:1;filter:none}
 @media(prefers-reduced-motion:reduce){::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none!important}main,.page-leaving main{animation:none!important;transition:none!important;transform:none;filter:none;opacity:1}}
 
 .hero h1 em{font-style:normal;color:var(--gold)}
@@ -482,7 +482,7 @@ p{margin:18px 0;color:var(--muted)}
 
 /* Perspective intégrée à la photo : stable pendant le fondu global. */
 .page-transition-fallback main.apartment-depth,.page-leaving main.apartment-depth{animation:none;transition:none;transform:none;filter:none;opacity:1}
-@media(prefers-reduced-motion:no-preference){.page-transition-fallback .apartment-depth .apartment-hero-copy,.page-transition-fallback .apartment-depth>section:not(.apartment-hero){animation:berry-clean-fade .4s ease both}}
+@media(prefers-reduced-motion:no-preference){.page-transition-fallback .apartment-depth .apartment-hero-copy,.page-transition-fallback .apartment-depth>section:not(.apartment-hero){animation:berry-clean-fade .8s cubic-bezier(.2,.7,.2,1) both}}
 
 /* Relief fixe partagé : aucune inclinaison animée ni déplacement au survol. */
 .site-depth main{background:none}
@@ -504,3 +504,5 @@ p{margin:18px 0;color:var(--muted)}
 @media(max-width:900px){.site-depth .contact-address{grid-column:1;margin-top:0}}
 
 .site-depth .contact-intro .contact-address{margin-top:28px;max-width:390px}.site-depth .contact-intro .contact-address p{display:block}.site-depth .contact-intro .contact-address p>*{display:block;margin-top:4px}
+
+.site-depth .contact-intro .contact-address{font-size:18px;width:100%;max-width:40ch;box-sizing:border-box}
