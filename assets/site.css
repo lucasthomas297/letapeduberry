@@ -467,8 +467,8 @@ p{margin:18px 0;color:var(--muted)}
 
 /* Appartement : volumes, plans superposés et cartes en relief. */
 .apartment-depth{position:relative;background:radial-gradient(ellipse at 85% 8%,#c3a27112,transparent 35%)}
-.apartment-depth .apartment-hero{perspective:1400px;gap:6%;padding-bottom:80px}
-.apartment-depth .apartment-hero>img{transform:rotateY(-7deg) rotateZ(1.5deg);border:1px solid #e1c69540;border-radius:22px;box-shadow:18px 28px 0 -9px #283229,30px 45px 70px #0009,inset 0 1px #ffffff30;transition:none}
+.apartment-depth .apartment-hero{gap:6%;padding-bottom:80px}
+.apartment-depth .apartment-hero>img{transform:perspective(1400px) rotateY(-7deg) rotateZ(1.5deg);border:1px solid #e1c69540;border-radius:22px;box-shadow:18px 28px 0 -9px #283229,30px 45px 70px #0009,inset 0 1px #ffffff30;transition:none}
 .apartment-depth .apartment-highlights{position:relative;margin-top:-35px;z-index:2;background:linear-gradient(145deg,#354136,#202820);border-color:#d1ad7650;border-radius:20px;box-shadow:0 3px 0 #101810,0 20px 40px #0005,inset 0 1px #ffffff18}
 .apartment-depth .apartment-detail-grid,.apartment-depth .amenity-grid,.apartment-depth .rules-grid{perspective:1200px;gap:30px}
 .apartment-depth .apartment-detail,.apartment-depth .amenity-card{position:relative;background:linear-gradient(145deg,#303c31,#202920 70%);border-color:#d1ad763a;border-radius:22px;box-shadow:0 5px 0 #111a13,0 16px 30px #0005,inset 0 1px #ffffff18;transform:translateZ(0);transition:none}
@@ -478,3 +478,9 @@ p{margin:18px 0;color:var(--muted)}
 
 @media(max-width:800px){.apartment-depth .apartment-hero>img{transform:none;box-shadow:8px 12px 0 -4px #283229,0 22px 40px #0006}.apartment-depth .apartment-highlights{margin-top:0}.apartment-depth .apartment-detail:nth-child(2){margin:0}.apartment-depth .apartment-detail-grid,.apartment-depth .amenity-grid,.apartment-depth .rules-grid{gap:22px}}
 @media(prefers-reduced-motion:reduce){.apartment-depth .apartment-hero>img,.apartment-depth .apartment-detail,.apartment-depth .amenity-card{transition:none}}
+
+/* La photo reste hors de la mise au point de page. */
+.apartment-depth .apartment-hero>img{view-transition-name:apartment-photo}
+::view-transition-group(apartment-photo),::view-transition-old(apartment-photo),::view-transition-new(apartment-photo){animation:none}
+.page-transition-fallback main.apartment-depth,.page-leaving main.apartment-depth{animation:none;transition:none;transform:none;filter:none;opacity:1}
+@media(prefers-reduced-motion:no-preference){.page-transition-fallback .apartment-depth .apartment-hero-copy,.page-transition-fallback .apartment-depth>section:not(.apartment-hero){animation:berry-focus-in .65s cubic-bezier(.2,.7,.2,1) both}}
