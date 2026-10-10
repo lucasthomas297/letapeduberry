@@ -159,13 +159,6 @@ if(dialog){
  dialog.addEventListener('close',()=>{document.body.style.overflow='';opener?.focus()});
 }
 
-if(document.querySelector('#location-map') && window.L){
- const map=L.map('location-map',{scrollWheelZoom:false}).setView([47.0935619,2.3951321],15);
- L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'}).addTo(map);
- const icon=L.divIcon({className:'stay-pin',iconSize:[32,32],iconAnchor:[16,32],popupAnchor:[0,-30]});
- L.marker([47.0935619,2.3951321],{icon,title:'L’Étape du Berry',alt:'16 Place du Général Leclerc, Bourges'}).addTo(map).bindPopup('<strong>L’Étape du Berry</strong><br>16 Place du Général Leclerc<br>18000 Bourges');
- document.querySelector('#location-map .leaflet-control-zoom-in').setAttribute('aria-label','Agrandir la carte');document.querySelector('#location-map .leaflet-control-zoom-out').setAttribute('aria-label','Réduire la carte');
-}
 
 const reviewsTrack=document.querySelector('#reviews-track');
 if(reviewsTrack){
@@ -177,4 +170,12 @@ if(reviewsTrack){
  prev.addEventListener('click',()=>move(-1));next.addEventListener('click',()=>move(1));
  reviewsTrack.addEventListener('keydown',event=>{if(event.key==='ArrowLeft'||event.key==='ArrowRight'){event.preventDefault();move(event.key==='ArrowRight'?1:-1);}});
  reviewsTrack.addEventListener('scroll',update,{passive:true});window.addEventListener('resize',update);update();
+}
+
+const googleMapFrame=document.querySelector('iframe#location-map');
+if(googleMapFrame){
+ let mapZoom=16;
+ const zoomIn=document.querySelector('#map-zoom-in'),zoomOut=document.querySelector('#map-zoom-out');
+ const setMapZoom=delta=>{mapZoom=Math.max(3,Math.min(20,mapZoom+delta));const url=new URL(googleMapFrame.src);url.searchParams.set('z',String(mapZoom));googleMapFrame.src=url.href;zoomIn.disabled=mapZoom===20;zoomOut.disabled=mapZoom===3;};
+ zoomIn?.addEventListener('click',()=>setMapZoom(1));zoomOut?.addEventListener('click',()=>setMapZoom(-1));
 }
