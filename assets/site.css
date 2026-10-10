@@ -506,3 +506,37 @@ p{margin:18px 0;color:var(--muted)}
 .site-depth .contact-intro .contact-address{margin-top:28px;max-width:390px}.site-depth .contact-intro .contact-address p{display:block}.site-depth .contact-intro .contact-address p>*{display:block;margin-top:4px}
 
 .site-depth .contact-intro .contact-address{font-size:18px;width:100%;max-width:40ch;box-sizing:border-box}
+
+.mobile-menu-toggle{display:none}
+@media(max-width:760px){
+.nav{padding:18px 20px;gap:14px;align-items:center}.brand{font-size:18px}.brand span{font-size:6.5px;letter-spacing:.12em}
+.mobile-nav-ready .mobile-menu-toggle{display:flex;align-items:center;justify-content:center;gap:7px;min-height:44px;margin-left:auto;padding:8px 11px;background:#263028;border:1px solid #d1ad7644;border-radius:10px;color:var(--ink);font:14px Arial,sans-serif}
+.mobile-menu-toggle span:first-child{font-size:20px}.mobile-nav-ready>.btn{display:none}
+.mobile-nav-ready .navlinks{display:none}.mobile-nav-ready.menu-open .navlinks{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;padding:10px 0 0;white-space:normal;overflow:visible}.mobile-nav-ready .navlinks a{padding:13px 12px;min-height:44px;background:#263028;border:1px solid #d1ad7626;border-radius:10px;font-size:14px}
+.hero-copy{padding:30px 22px 26px}.hero h1{font-size:34px;line-height:1.14;margin:20px 0 24px}.hero p{font-size:16px;line-height:1.65}.hero-photo{height:275px;background-size:auto 100%}.hero-badge{display:none}.hero .btn{min-height:48px}
+.station-highlight{margin-right:0;padding:16px;gap:12px}.station-highlight strong{font-size:18px}.station-highlight span{font-size:12px}
+.booking{margin:20px 16px 0;padding:20px 16px;gap:16px 12px}.booking-control{font-size:15px;min-height:48px}.booking>.btn{grid-column:1/-1;min-height:48px}.booking .guest-field{grid-column:1/-1}.booking-options{font-size:14px}.booking-option{min-height:40px}.note{font-size:12px;line-height:1.6}
+.facts{margin:0 20px}.section{padding:36px 22px}.intro{padding:28px 22px;gap:24px}.intro h2{font-size:32px}.gallery img{height:190px;box-shadow:none!important}.gallery{gap:12px}
+.apartment-page{padding:0 22px 40px}.apartment-hero{padding-top:30px}.apartment-hero h1{font-size:36px}.apartment-hero .apartment-lead{font-size:18px}.apartment-depth .apartment-hero{padding-bottom:36px}.apartment-depth .apartment-hero>img{height:260px;border-radius:18px;box-shadow:0 12px 24px #0005}.apartment-highlights{margin-bottom:36px}.apartment-depth .apartment-detail,.apartment-depth .amenity-card{padding:24px 22px;border-radius:18px;box-shadow:0 3px 0 #111a13,0 12px 22px #0004}.apartment-detail h2{font-size:28px}.amenity-card h3{font-size:25px}.apartment-depth .arrival-options,.apartment-depth .apartment-cta{padding:24px 22px}.apartment-cta h2{font-size:30px}
+.photos-page{padding-left:22px;padding-right:22px}.photos-page .title{font-size:38px;margin-top:28px}.photo-grid.photo-mosaic{gap:28px}.photo-mosaic figure:nth-child(n),.discoveries .photo-mosaic figure:nth-child(n){grid-column:1/-1;margin:0}.site-depth .photo-mosaic .photo-open{border-radius:16px;box-shadow:0 3px 0 #111a13,0 12px 22px #0004}.photo-mosaic figcaption{font-size:14px;margin-top:12px}
+.contact-page{padding:30px 22px 52px}.contact-layout{gap:30px}.contact-intro{padding-top:0}.contact-intro h1{font-size:38px;margin:16px 0 22px}.contact-email{font-size:17px;gap:8px}.site-depth .contact-intro .contact-address{font-size:16px;margin-top:22px;max-width:none}.site-depth .contact-card{padding:26px 20px;border-radius:18px;box-shadow:0 3px 0 #111a13,0 12px 22px #0004}.contact-card h2{font-size:28px}.contact-card .btn{width:100%;min-height:48px}
+.site-depth .review{border-radius:18px}.review-carousel .review{flex-basis:100%}.privacy-page{padding:30px 22px}.site-depth .privacy-page section{padding:22px 18px}.privacy-page h2{font-size:25px}.footer{padding:32px 22px;font-size:12px}
+}
+
+.mobile-reservation-link{display:none}
+@media(max-width:760px){.mobile-nav-ready .navlinks .mobile-reservation-link{display:block;grid-column:1/-1;text-align:center;background:var(--gold);color:#201e17;border-color:var(--gold)}}
+@media(max-width:760px){.apartment-page .eyebrow,.contact-page .eyebrow,.guide-main .eyebrow{font:10px/1.6 Arial,sans-serif;letter-spacing:.16em}.contact-card input,.contact-card textarea{font-size:16px}.booking-field .booking-control{padding:10px}.booking-field .booking-control svg{width:18px;height:18px}}
+@media(max-width:760px){
+.mobile-nav-ready .mobile-menu-toggle{background:transparent;border:1px solid #d1ad7660;border-radius:999px;padding:10px 15px;color:var(--gold);box-shadow:inset 0 1px #ffffff08;font:14px Georgia,serif}
+.mobile-menu-toggle span:first-child{font-size:18px}
+.mobile-nav-ready.menu-open .navlinks{gap:0;padding:12px 16px;margin-top:4px;background:linear-gradient(135deg,#2a342c,#202821);border:1px solid #d1ad7635;border-radius:18px;box-shadow:0 12px 24px #0004}
+.mobile-nav-ready .navlinks a{display:flex;align-items:center;padding:14px 10px;background:transparent;border:none;border-bottom:1px solid #d1ad7622;border-radius:0;min-height:48px;font:15px Georgia,serif}
+.mobile-nav-ready .navlinks a[aria-current="page"]{color:var(--gold)}
+.mobile-nav-ready .navlinks .mobile-reservation-link{display:flex;justify-content:center;margin:12px 0 4px;border-radius:12px;background:linear-gradient(110deg,#dbb47c,#c6a06a);border:1px solid #e0bb82;color:#201e17}
+.apartment-depth .apartment-hero{padding-bottom:48px}.apartment-depth .apartment-highlights{margin-top:0}
+}
+@media(max-width:760px){.mobile-nav-ready.menu-open .navlinks{align-items:stretch}.mobile-nav-ready .navlinks a{height:100%;align-self:stretch}}
+@media(max-width:760px){.apartment-depth .apartment-hero{padding-bottom:0}.apartment-depth .apartment-highlights{margin-top:36px}}
+@media(max-width:760px){.mobile-nav-ready .navlinks .mobile-reservation-link{height:auto;min-height:48px;align-self:center;margin:12px 0 0;padding:12px 16px}.mobile-nav-ready.menu-open .navlinks{padding-bottom:16px}}
+@media(max-width:760px){.hero-photo{width:100%;align-self:center;background-position:center center;margin-left:auto;margin-right:auto}}
+@media(max-width:760px){.hero-photo{-webkit-mask-image:linear-gradient(90deg,transparent 0%,#000 13%,#000 87%,transparent 100%);mask-image:linear-gradient(90deg,transparent 0%,#000 13%,#000 87%,transparent 100%)}}

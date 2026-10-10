@@ -1,4 +1,28 @@
 (() => {
+  const header = document.querySelector('.nav');
+  const menu = header?.querySelector('.navlinks');
+  if (menu) {
+    menu.id = 'primary-navigation';
+    const bookingLink = header.querySelector(':scope > .btn')?.cloneNode(true);
+    if (bookingLink) { bookingLink.className = 'mobile-reservation-link'; menu.appendChild(bookingLink); }
+    const toggle = document.createElement('button');
+    toggle.className = 'mobile-menu-toggle';
+    toggle.type = 'button';
+    toggle.setAttribute('aria-controls', menu.id);
+    toggle.setAttribute('aria-expanded', 'false');
+    toggle.innerHTML = '<span aria-hidden="true">☰</span><span>Menu</span>';
+    header.insertBefore(toggle, menu);
+    header.classList.add('mobile-nav-ready');
+    const close = () => { header.classList.remove('menu-open'); toggle.setAttribute('aria-expanded', 'false'); };
+    toggle.addEventListener('click', () => {
+      const open = !header.classList.contains('menu-open');
+      header.classList.toggle('menu-open', open);
+      toggle.setAttribute('aria-expanded', String(open));
+    });
+    menu.addEventListener('click', event => { if (event.target.closest('a')) close(); });
+    document.addEventListener('keydown', event => { if (event.key === 'Escape' && header.classList.contains('menu-open')) { close(); toggle.focus(); } });
+    document.addEventListener('click', event => { if (!header.contains(event.target)) close(); });
+  }
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const native = CSS.supports('view-transition-name', 'page') && 'onpagereveal' in window;
   if (!native && !reduced.matches) document.documentElement.classList.add('page-transition-fallback');
