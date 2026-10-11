@@ -328,6 +328,10 @@ test('tax-inclusive prices preserve totals and apply exemptions and optional hou
  assert.throws(()=>stayBreakdown({...stay,taxable_guests:1},env),/Répartition de taxe/);
  assert.throws(()=>stayBreakdown({...stay,total_cents:15001},env));
 });
+test('January owner-approved tax excludes the departmental addition and preserves the guest total',()=>{
+ const stay={arrival:'2027-01-18',departure:'2027-01-22',guests:2,rate:'flex',total_cents:32200,early_arrival:1,late_departure:1};
+ assert.deepEqual(stayBreakdown(stay,{TOURIST_TAX_RATE:'0.05',TOURIST_TAX_ADDITIONAL_RATE:'0'}),{nights:4,location:29712,options:1000,tax:1488,total:32200,taxable:2});
+});
 test('contract freezes descriptive annex and never prechecks a missing acceptance',()=>{
  const stay={id:'2026-001',arrival:'2026-11-13',departure:'2026-11-15',guests:2,rate:'fixed',total_cents:15000,customer_name:'</script><script>attack</script>'};
  const html=renderContract(stay,{}),model=savedDocumentModel(html);
