@@ -1,5 +1,5 @@
-# Publication candidate only. Do not deploy before owner approval.
-# All public booking/payment/message activation switches remain false.
+# Production activation approved by the owner on 11 October 2026.
+# Standard bank guarantee through 3 nights; cash deposit from 4 nights.
 name = "letapeduberry-reservation"
 main = "request-worker.mjs"
 compatibility_date = "2026-10-04"
@@ -23,13 +23,13 @@ migrations_dir = "migrations"
 STRIPE_EXTENDED_AUTHORIZATION_ENABLED = "false"
 STRIPE_MODE = "live"
 STRIPE_WEBHOOK_ENABLED = "true"
-STRIPE_LIVE_ENABLED = "false"
-REQUESTS_ENABLED = "false"
-GUEST_MESSAGES_ENABLED = "false"
-CONTRACT_APPROVED = "false"
+STRIPE_LIVE_ENABLED = "true"
+REQUESTS_ENABLED = "true"
+GUEST_MESSAGES_ENABLED = "true"
+CONTRACT_APPROVED = "true"
 SITE_ORIGIN = "https://letapeduberry.fr"
 CONTACT_FROM = "L’Étape du Berry <site@messages.letapeduberry.fr>"
-# Incoming signed Stripe events only; outgoing live payments remain disabled.
+# Incoming signed Stripe events and outgoing live payments enabled by owner approval.
 # Configure Access issuer/AUD/email, owner details, calendar and Resend
 # before any public reservation or scheduled guest message activation.
 # Routes must target the exact API paths; do not replace /api/contact.
