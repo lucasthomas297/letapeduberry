@@ -9,3 +9,14 @@ dialog.damage-panel{width:min(660px,calc(100vw - 32px));max-width:660px;padding:
 .mail-metadata{display:flex;justify-content:space-between;align-items:center;gap:16px 28px;flex-wrap:wrap;font:14px/1.5 system-ui,sans-serif;color:#66736a}.mail-metadata strong{font-size:16px;color:var(--ink)}.mail-metadata time{display:flex;gap:24px;flex-wrap:wrap}@media(max-width:600px){.mail-metadata time{gap:16px}}
 
 .booking-tabs{display:flex;gap:8px;padding:7px;background:#e9e8df;border-radius:16px;margin:24px 0}.booking-tabs button{margin:0;flex:1;background:transparent;color:var(--ink);border-radius:11px;font-size:15px;line-height:1.4}.booking-tabs button[aria-selected=true]{background:var(--ink);color:#fff;box-shadow:0 4px 12px #27362f22}.booking-tabs button:focus-visible{outline:3px solid var(--gold);outline-offset:3px}.empty-stays{padding:32px;border:1px dashed #cfc7b6;border-radius:16px;color:#66736a;text-align:center}@media(max-width:600px){.booking-tabs{gap:4px}.booking-tabs button{padding:12px 8px;font-size:14px}}
+
+/* Compact owner dossiers; all decisions remain inside the expanded panel. */
+.stay-dossier{margin:14px 0;border:1px solid #dedfd6;border-radius:16px;background:#fff;box-shadow:0 6px 24px #27362f08;overflow:hidden}
+.stay-dossier>summary{display:flex;align-items:center;gap:18px;padding:20px 24px;cursor:pointer;list-style:none}
+.stay-dossier>summary::-webkit-details-marker{display:none}
+.stay-dossier>summary:after{content:'+';font-size:25px;color:#80653e;margin-left:auto;flex:none}
+.stay-dossier[open]>summary:after{content:'−'}
+.stay-dossier>summary:focus-visible{outline:3px solid var(--gold);outline-offset:-3px}
+.dossier-dates{font-size:14px;color:#66736a;white-space:nowrap}.dossier-name{font-size:17px}.stay-dossier>summary .badge{margin-left:auto;font-size:13px;white-space:nowrap}
+.dossier-content{padding:8px 26px 26px;border-top:1px solid #eeeae0}.dossier-content h2{margin:14px 0}
+@media(max-width:600px){.stay-dossier>summary{padding:17px;gap:10px;flex-wrap:wrap}.dossier-dates{font-size:12px}.dossier-name{font-size:15px}.stay-dossier>summary .badge{font-size:11px}.dossier-content{padding:8px 18px 20px}}

@@ -608,3 +608,10 @@ test('damage retention: justified notice, exact amount, expired hold and uncerta
 
  }finally{globalThis.fetch=original;db.close();}
 });
+
+ test('structured customer address requires street, postal code and city and keeps one contract address',()=>{
+ const addressParts={street:'9 rue de test',postalCode:'18000',city:'Bourges'};
+ assert.equal(validateStay({...details,addressParts},'2026-10-03').address,'9 rue de test, 18000 Bourges');
+ for(const field of ['street','postalCode','city'])assert.throws(()=>validateStay({...details,addressParts:{...addressParts,[field]:''}},'2026-10-03'));
+ assert.equal(validateStay({...details,addressParts:{street:'12 Test Road',postalCode:'SW1A 1AA',city:'London'}},'2026-10-03').address,'12 Test Road, SW1A 1AA London');
+ });

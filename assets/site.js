@@ -124,13 +124,13 @@ if(form){
  document.querySelector('#request-send').addEventListener('click',async()=>{
   if(localRequestPreview||requestSending||requestSend.disabled)return;
   const name=document.querySelector('#request-name'),email=document.querySelector('#request-email'),phone=document.querySelector('#request-phone');
-  const insurance=document.querySelector('#request-insurance'),rules=document.querySelector('#request-rules'),deposit=document.querySelector('#request-deposit'),address=document.querySelector('#request-address'),comment=document.querySelector('#request-comment');
-  if(!name.reportValidity()||!email.reportValidity()||!phone.reportValidity()||!rules.reportValidity()||!deposit.reportValidity()||!address.reportValidity()||!comment.reportValidity()||!insurance.reportValidity())return;
+  const insurance=document.querySelector('#request-insurance'),rules=document.querySelector('#request-rules'),deposit=document.querySelector('#request-deposit'),address=document.querySelector('#request-address'),postalCode=document.querySelector('#request-postal-code'),city=document.querySelector('#request-city'),comment=document.querySelector('#request-comment');
+  if(!name.reportValidity()||!email.reportValidity()||!phone.reportValidity()||!rules.reportValidity()||!deposit.reportValidity()||!address.reportValidity()||!postalCode.reportValidity()||!city.reportValidity()||!comment.reportValidity()||!insurance.reportValidity())return;
   const button=requestSend;requestSending=true;updateRequestButton();requestMessage.textContent='Envoi en cours…';
   const payload={arrival:arrival.value,departure:departure.value,guests:guestInput.value.startsWith('1')?1:2,
    early:earlyArrival.checked,late:lateDeparture.checked,rate:document.querySelector('#request-rate').value,
    name:name.value.trim(),email:email.value.trim(),phone:phone.value.trim(),
-   payment:document.querySelector('input[name="payment_preference"]:checked').value,rulesAccepted:rules.checked,insuranceAccepted:insurance.checked,depositAccepted:deposit.checked,address:address.value.trim(),comment:comment.value.trim()};
+   payment:document.querySelector('input[name="payment_preference"]:checked').value,rulesAccepted:rules.checked,insuranceAccepted:insurance.checked,depositAccepted:deposit.checked,address:[address.value.trim(),postalCode.value.trim()+' '+city.value.trim()].join(', '),addressParts:{street:address.value.trim(),postalCode:postalCode.value.trim(),city:city.value.trim()},comment:comment.value.trim()};
   try{
    const body=JSON.stringify(payload);
    if(body!==lastRequestBody){lastRequestBody=body;lastRequestKey=crypto.randomUUID();}

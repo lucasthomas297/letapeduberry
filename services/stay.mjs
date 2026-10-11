@@ -29,6 +29,14 @@ export function validateStay(data,today) {
   result[field]=data[field].trim();
  }
  if(result.name.length<2 || !/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(result.email) || !/^[+()\d .-]{6,40}$/.test(result.phone))throw new Error('Coordonnées invalides.');
+ if(data.addressParts!==undefined){
+  const parts=data.addressParts;
+  if(!parts||typeof parts!=='object'||Array.isArray(parts))throw new Error('Adresse postale invalide.');
+  for(const [field,max] of Object.entries({street:400,postalCode:20,city:80})){
+   if(typeof parts[field]!=='string'||parts[field].trim().length<2||parts[field].length>max||/[\r\n]/.test(parts[field]))throw new Error('Veuillez compléter la rue, le code postal et la ville.');
+  }
+  result.address=`${parts.street.trim()}, ${parts.postalCode.trim()} ${parts.city.trim()}`;
+ }
  const quote=quoteStay(data,today);
  for(const key of ['arrival','departure','rate','early','late','guests','payment'])result[key]=data[key];
  return {...result,...quote,rulesVersion:RULES_VERSION};

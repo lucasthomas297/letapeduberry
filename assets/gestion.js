@@ -4,6 +4,8 @@ const currentTab=document.querySelector('#tab-current'),archiveTab=document.quer
 const trashToggle=document.querySelector('#trash-toggle');
 trashToggle.onclick=()=>{selectedCategory=selectedCategory==='trash'?'archives':'trash';load();};
 let selectedCategory='current',initialCategory=true;
+const expandedDossiers=new Set();
+const dossierDate=value=>new Intl.DateTimeFormat('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',timeZone:'UTC'}).format(new Date(value+'T12:00:00Z'));
 for(const [tab,category] of [[currentTab,'current'],[archiveTab,'archives']]){
  tab.onclick=()=>{selectedCategory=category;load();};
  tab.onkeydown=event=>{
@@ -41,7 +43,7 @@ async function load(){
   const stays=preview?examples:(await (await fetch('/api/admin/stays')).json()).stays;
   if(!Array.isArray(stays))throw new Error('Connectez-vous à l’espace privé pour consulter les demandes.');
   const groups={current:stays.filter(stay=>!stay.deleted_at&&!isArchivedStay(stay)),archives:stays.filter(stay=>!stay.deleted_at&&isArchivedStay(stay)),trash:stays.filter(stay=>stay.deleted_at)};
-  if(initialCategory){const linked=stays.find(stay=>'#'+stay.id===location.hash);if(linked)selectedCategory=linked.deleted_at?'trash':isArchivedStay(linked)?'archives':'current';initialCategory=false;}
+  if(initialCategory){const linked=stays.find(stay=>'#'+stay.id===location.hash);if(linked){selectedCategory=linked.deleted_at?'trash':isArchivedStay(linked)?'archives':'current';expandedDossiers.add(linked.id);}initialCategory=false;}
   currentTab.textContent=`En cours et à venir (${groups.current.length})`;archiveTab.textContent=`Archives (${groups.archives.length})`;
   for(const [tab,category] of [[currentTab,'current'],[archiveTab,'archives']]){const selected=selectedCategory===category||(category==='archives'&&selectedCategory==='trash');tab.setAttribute('aria-selected',String(selected));tab.tabIndex=selected?0:-1;}
   trashToggle.hidden=selectedCategory==='current';trashToggle.textContent=selectedCategory==='trash'?'Revenir aux archives':`Corbeille (${groups.trash.length})`;
@@ -51,7 +53,14 @@ async function load(){
   list.replaceChildren();
   if(!groups[selectedCategory].length)text(list,'p',selectedCategory==='trash'?'La corbeille est vide.':selectedCategory==='current'?'Aucune demande ni réservation en cours ou à venir.':'Aucun dossier archivé pour le moment.').className='empty-stays';
   for(const stay of groups[selectedCategory]){
-   const card=document.createElement('article');list.append(card);card.id=stay.id;
+   const dossier=document.createElement('details');dossier.className='stay-dossier';dossier.id=stay.id;list.append(dossier);
+   const heading=text(dossier,'summary','');
+   text(heading,'span',`${dossierDate(stay.arrival)} → ${dossierDate(stay.departure)}`).className='dossier-dates';
+   text(heading,'strong',stay.customer_name).className='dossier-name';
+   text(heading,'span',stay.status==='confirmed'&&isArchivedStay(stay)?'Séjour terminé':labels[stay.status]||stay.status).className='badge';
+   dossier.open=expandedDossiers.has(stay.id);
+   dossier.addEventListener('toggle',()=>{if(dossier.open)expandedDossiers.add(stay.id);else expandedDossiers.delete(stay.id);});
+   const card=document.createElement('div');card.className='dossier-content';dossier.append(card);
    text(card,'span',stay.status==='confirmed'&&isArchivedStay(stay)?'Séjour terminé':stay.status==='awaiting_payment'&&stay.payment_preference==='cash'?'En attente de l’acceptation du contrat':labels[stay.status]||stay.status).className='badge';text(card,'h2',stay.customer_name);
    text(card,'p',`${stay.arrival} → ${stay.departure} · ${stay.guests} personne(s) · ${(stay.total_cents/100).toFixed(2)} €`);
    text(card,'p',stay.rate==='fixed'?'Tarif non remboursable':'Tarif remboursable');
@@ -85,7 +94,7 @@ async function load(){
      if(!stay.paid_at){const received=text(card,'button','Enregistrer le règlement en espèces');received.onclick=()=>cashReceived(stay);}
     }
 
-    const cancelStayButton=text(card,'button','Annuler le séjour');cancelStayButton.className='secondary';cancelStayButton.onclick=()=>cancellation(stay);
+    if(!isArchivedStay(stay)){const cancelStayButton=text(card,'button','Annuler le séjour');cancelStayButton.className='secondary';cancelStayButton.onclick=()=>cancellation(stay);}
     if(stay.deposit_method!=='cash'){
     text(card,'p','Garantie bancaire : '+(deposits[stay.deposit_status]||'À demander près de l’arrivée'));
     if(stay.capture_before)text(card,'p','Expiration bancaire : '+new Intl.DateTimeFormat('fr-FR',{timeZone:'Europe/Paris',dateStyle:'medium',timeStyle:'short'}).format(new Date(stay.capture_before)));
