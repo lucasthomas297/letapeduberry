@@ -1,4 +1,14 @@
+import {isArchivedStay} from './gestion-categories.js';
 const list=document.querySelector('#stays'),status=document.querySelector('#admin-status');
+const currentTab=document.querySelector('#tab-current'),archiveTab=document.querySelector('#tab-archives');
+let selectedCategory='current',initialCategory=true;
+for(const [tab,category] of [[currentTab,'current'],[archiveTab,'archives']]){
+ tab.onclick=()=>{selectedCategory=category;load();};
+ tab.onkeydown=event=>{
+  if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
+  event.preventDefault();const next=event.key==='Home'?currentTab:event.key==='End'?archiveTab:tab===currentTab?archiveTab:currentTab;next.focus();next.click();
+ };
+}
 const preview=new URL(location.href).searchParams.has('apercu');
 const examples=[{id:'exemple',arrival:'2026-11-06',departure:'2026-11-08',status:'pending',customer_name:'Voyageur de démonstration',customer_email:'voyageur@example.test',customer_phone:'Coordonnées de démonstration',comment:'Nous venons découvrir Bourges pendant un week-end.',guests:2,rate:'fixed',total_cents:15000,payment_preference:'card'}];
 if(preview)examples.push({id:'exemple-garantie',arrival:'2026-09-20',departure:'2026-09-22',status:'confirmed',customer_name:'Séjour fictif — garantie',customer_email:'voyageur@example.test',customer_phone:'06 00 00 00 00',guests:2,rate:'flex',total_cents:16800,payment_preference:'card',paid_at:'2026-09-19',deposit_status:'authorized'});
@@ -28,12 +38,18 @@ async function load(){
  try {
   const stays=preview?examples:(await (await fetch('/api/admin/stays')).json()).stays;
   if(!Array.isArray(stays))throw new Error('Connectez-vous à l’espace privé pour consulter les demandes.');
-  status.textContent=preview?'Aperçu local : données fictives, aucune décision ni aucun paiement réel.':`${stays.length} demande(s)`;
+  const groups={current:stays.filter(stay=>!isArchivedStay(stay)),archives:stays.filter(stay=>isArchivedStay(stay))};
+  if(initialCategory){const linked=stays.find(stay=>'#'+stay.id===location.hash);if(linked)selectedCategory=isArchivedStay(linked)?'archives':'current';initialCategory=false;}
+  currentTab.textContent=`En cours et à venir (${groups.current.length})`;archiveTab.textContent=`Archives (${groups.archives.length})`;
+  for(const [tab,category] of [[currentTab,'current'],[archiveTab,'archives']]){tab.setAttribute('aria-selected',String(selectedCategory===category));tab.tabIndex=selectedCategory===category?0:-1;}
+  list.setAttribute('aria-labelledby',selectedCategory==='current'?'tab-current':'tab-archives');
+  status.textContent=preview?'Aperçu local : données fictives, aucune décision ni aucun paiement réel.':selectedCategory==='current'?'Demandes à étudier et réservations en cours ou à venir.':'Séjours terminés et demandes refusées, annulées ou expirées. Les dossiers restent consultables.';
   if(!preview&&!document.querySelector('#owner-health'))loadHealth();
   list.replaceChildren();
-  for(const stay of stays){
+  if(!groups[selectedCategory].length)text(list,'p',selectedCategory==='current'?'Aucune demande ni réservation en cours ou à venir.':'Aucun dossier archivé pour le moment.').className='empty-stays';
+  for(const stay of groups[selectedCategory]){
    const card=document.createElement('article');list.append(card);card.id=stay.id;
-   text(card,'span',stay.status==='awaiting_payment'&&stay.payment_preference==='cash'?'En attente de l’acceptation du contrat':labels[stay.status]||stay.status).className='badge';text(card,'h2',stay.customer_name);
+   text(card,'span',stay.status==='confirmed'&&isArchivedStay(stay)?'Séjour terminé':stay.status==='awaiting_payment'&&stay.payment_preference==='cash'?'En attente de l’acceptation du contrat':labels[stay.status]||stay.status).className='badge';text(card,'h2',stay.customer_name);
    text(card,'p',`${stay.arrival} → ${stay.departure} · ${stay.guests} personne(s) · ${(stay.total_cents/100).toFixed(2)} €`);
    text(card,'p',stay.rate==='fixed'?'Tarif non remboursable':'Tarif remboursable');
    text(card,'p',stay.payment_preference==='cash'?'Paiement en espèces à l’arrivée':'Paiement par carte bancaire en ligne');
