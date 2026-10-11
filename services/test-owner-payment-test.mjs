@@ -67,13 +67,28 @@ test('same booking flow creates test Checkout, rejects cross-mode webhooks, send
   assert.equal((await flowFetch(await signedEvent('/api/stripe/webhook-test','whsec_test',event),env)).status,200);
   assert.equal((await flowFetch(await signedEvent('/api/stripe/webhook-test','whsec_test',event),env)).status,200);
   assert.equal(db.prepare('SELECT status FROM stays').get().status,'confirmed');
-  await sendQueuedMail(env);assert.equal(mails.length,1);assert.equal(mails[0].to[0],env.OWNER_EMAIL);assert.match(mails[0].subject,/^TEST/);assert.equal(mails[0].attachments.length,2);
+  await sendQueuedMail(env);assert.equal(mails.length,2);assert.equal(mails[0].to[0],env.OWNER_EMAIL);assert.match(mails[0].subject,/^TEST/);assert.equal(mails[0].attachments.length,2);const ownerMail=mails.find(m=>m.to[0]==='contact@letapeduberry.fr');assert.match(ownerMail.subject,/Paiement reçu/);assert.match(ownerMail.text,/Owner/);assert.match(ownerMail.text,/78.00/);await sendQueuedMail(env);assert.equal(mails.length,2);
   const exportUrl='https://example.test/calendrier/direct/'+env.CALENDAR_EXPORT_TOKEN+'.ics';
   assert.match(await (await calendarExport(new Request(exportUrl),env)).text(),/20270118/);
   const confirmed=db.prepare('SELECT * FROM stays').get(),data={cause:'exception',reason:'Fin du test Stripe'};const plan=await cancellationPlan(confirmed,data);
   await cancelStay(confirmed,{...data,notifiedAt:plan.notifiedAt,confirmed:true,planHash:plan.hash},env);
   assert.equal(db.prepare('SELECT status FROM stays').get().status,'cancelled');assert.equal(db.prepare('SELECT refund_status FROM cancellations').get().refund_status,'succeeded');
   assert.doesNotMatch(await (await calendarExport(new Request(exportUrl),env)).text(),/20270118/);
-  await sendQueuedMail(env);assert.equal(mails.length,3);assert.ok(mails.every(m=>m.subject.startsWith('TEST')));
+  await sendQueuedMail(env);assert.equal(mails.length,4);assert.ok(mails.every(m=>m.subject.startsWith('TEST')));
+ }finally{globalThis.fetch=original;db.close();}
+});
+test('owner confirmation retries independently of guest mail and never describes cash as already paid',async()=>{
+ const {db,env,add}=fixture();add('notice','guest@example.test');const now=new Date().toISOString();
+ db.prepare("UPDATE stays SET status='confirmed',contract_accepted_at=?,paid_at=? WHERE id='notice'").run(now,now);
+ db.prepare("INSERT INTO mail_outbox(id,stay_id,kind,created_at,payload) VALUES ('guest-confirmation','notice','confirmation',?,'{}')").run(now);
+ const calls=[],original=globalThis.fetch;let guestFails=true;
+ globalThis.fetch=async(url,options)=>{assert.equal(String(url),'https://api.resend.com/emails');const mail=JSON.parse(options.body);calls.push({mail,key:options.headers['Idempotency-Key']});if(mail.to[0]==='guest@example.test'&&guestFails)return Response.json({error:'temporary'}, {status:503});return Response.json({id:'accepted-'+calls.length});};
+ try{
+  await sendQueuedMail(env);assert.equal(calls.length,2);assert.deepEqual(calls[1].mail.to,['contact@letapeduberry.fr']);assert.match(calls[1].mail.text,/paiement intégral.*confirmé/);assert.doesNotMatch(calls[1].mail.text,/En attente de votre validation/);
+  assert.ok(db.prepare("SELECT sent_at FROM mail_outbox WHERE kind='owner_confirmation'").get().sent_at);
+  guestFails=false;await sendQueuedMail(env);assert.equal(calls.length,3);assert.equal(calls[0].key,calls[2].key);assert.deepEqual(calls[2].mail.to,['guest@example.test']);
+  add('cash','cash@example.test');db.prepare("UPDATE stays SET arrival='2027-02-18',departure='2027-02-19',payment_preference='cash',status='confirmed',contract_accepted_at=? WHERE id='cash'").run(now);
+  db.prepare("INSERT INTO mail_outbox(id,stay_id,kind,created_at,payload) VALUES ('cash-confirmation','cash','confirmation',?,'{}')").run(now);
+  await sendQueuedMail(env);const cashOwner=calls.find(c=>c.mail.to[0]==='contact@letapeduberry.fr'&&c.mail.subject.includes('espèces'));assert.ok(cashOwner);assert.match(cashOwner.mail.text,/reste à régler en espèces/);assert.doesNotMatch(cashOwner.mail.text,/paiement intégral.*confirmé|Paiement confirmé le/);
  }finally{globalThis.fetch=original;db.close();}
 });
