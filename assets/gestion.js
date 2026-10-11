@@ -1,6 +1,8 @@
 import {isArchivedStay} from './gestion-categories.js';
 const list=document.querySelector('#stays'),status=document.querySelector('#admin-status');
 const currentTab=document.querySelector('#tab-current'),archiveTab=document.querySelector('#tab-archives');
+const trashToggle=document.querySelector('#trash-toggle');
+trashToggle.onclick=()=>{selectedCategory=selectedCategory==='trash'?'archives':'trash';load();};
 let selectedCategory='current',initialCategory=true;
 for(const [tab,category] of [[currentTab,'current'],[archiveTab,'archives']]){
  tab.onclick=()=>{selectedCategory=category;load();};
@@ -38,15 +40,16 @@ async function load(){
  try {
   const stays=preview?examples:(await (await fetch('/api/admin/stays')).json()).stays;
   if(!Array.isArray(stays))throw new Error('Connectez-vous à l’espace privé pour consulter les demandes.');
-  const groups={current:stays.filter(stay=>!isArchivedStay(stay)),archives:stays.filter(stay=>isArchivedStay(stay))};
-  if(initialCategory){const linked=stays.find(stay=>'#'+stay.id===location.hash);if(linked)selectedCategory=isArchivedStay(linked)?'archives':'current';initialCategory=false;}
+  const groups={current:stays.filter(stay=>!stay.deleted_at&&!isArchivedStay(stay)),archives:stays.filter(stay=>!stay.deleted_at&&isArchivedStay(stay)),trash:stays.filter(stay=>stay.deleted_at)};
+  if(initialCategory){const linked=stays.find(stay=>'#'+stay.id===location.hash);if(linked)selectedCategory=linked.deleted_at?'trash':isArchivedStay(linked)?'archives':'current';initialCategory=false;}
   currentTab.textContent=`En cours et à venir (${groups.current.length})`;archiveTab.textContent=`Archives (${groups.archives.length})`;
-  for(const [tab,category] of [[currentTab,'current'],[archiveTab,'archives']]){tab.setAttribute('aria-selected',String(selectedCategory===category));tab.tabIndex=selectedCategory===category?0:-1;}
+  for(const [tab,category] of [[currentTab,'current'],[archiveTab,'archives']]){const selected=selectedCategory===category||(category==='archives'&&selectedCategory==='trash');tab.setAttribute('aria-selected',String(selected));tab.tabIndex=selected?0:-1;}
+  trashToggle.hidden=selectedCategory==='current';trashToggle.textContent=selectedCategory==='trash'?'Revenir aux archives':`Corbeille (${groups.trash.length})`;
   list.setAttribute('aria-labelledby',selectedCategory==='current'?'tab-current':'tab-archives');
-  status.textContent=preview?'Aperçu local : données fictives, aucune décision ni aucun paiement réel.':selectedCategory==='current'?'Demandes à étudier et réservations en cours ou à venir.':'Séjours terminés et demandes refusées, annulées ou expirées. Les dossiers restent consultables.';
+  status.textContent=preview?'Aperçu local : données fictives, aucune décision ni aucun paiement réel.':selectedCategory==='trash'?'Dossiers retirés des archives. Vous pouvez les restaurer.':selectedCategory==='current'?'Demandes à étudier et réservations en cours ou à venir.':'Séjours terminés et demandes refusées, annulées ou expirées. Les dossiers restent consultables.';
   if(!preview&&!document.querySelector('#owner-health'))loadHealth();
   list.replaceChildren();
-  if(!groups[selectedCategory].length)text(list,'p',selectedCategory==='current'?'Aucune demande ni réservation en cours ou à venir.':'Aucun dossier archivé pour le moment.').className='empty-stays';
+  if(!groups[selectedCategory].length)text(list,'p',selectedCategory==='trash'?'La corbeille est vide.':selectedCategory==='current'?'Aucune demande ni réservation en cours ou à venir.':'Aucun dossier archivé pour le moment.').className='empty-stays';
   for(const stay of groups[selectedCategory]){
    const card=document.createElement('article');list.append(card);card.id=stay.id;
    text(card,'span',stay.status==='confirmed'&&isArchivedStay(stay)?'Séjour terminé':stay.status==='awaiting_payment'&&stay.payment_preference==='cash'?'En attente de l’acceptation du contrat':labels[stay.status]||stay.status).className='badge';text(card,'h2',stay.customer_name);
@@ -72,6 +75,8 @@ async function load(){
    if(stay.status==='pending')text(card,'p','Consultez les documents avant d’accepter. Leur ouverture n’envoie aucun message au voyageur.').className='muted';
 
    text(card,'p',`${stay.customer_email} · ${stay.customer_phone}`);text(card,'pre',stay.comment||'Aucun commentaire.');
+   if(stay.deleted_at){const restore=text(card,'button','Restaurer le dossier');restore.onclick=()=>moveArchive(stay,'restore',restore);continue;}
+   if(isArchivedStay(stay)){const remove=text(card,'button','Supprimer le dossier');remove.className='secondary';remove.onclick=()=>moveArchive(stay,'trash',remove);}
    if(stay.unsent_notifications)text(card,'p',`${stay.unsent_notifications} notification(s) en attente d’envoi : vérifiez la messagerie avant de contacter le voyageur.`).className='notice';
    const deposits={requested:'Lien envoyé, autorisation attendue',authorized:'Empreinte autorisée',review:'Empreinte à vérifier : montant ou durée insuffisante',released:'Empreinte libérée',expired:'Lien ou empreinte expirés',captured:'Retenue effectuée',failed:'Autorisation échouée'};
    if(stay.status==='confirmed') {
@@ -127,6 +132,14 @@ async function load(){
    }
   }
  }catch(error){status.textContent=error.message;}
+}
+async function moveArchive(stay,action,button){
+ button.disabled=true;
+ try{
+  if(preview){stay.deleted_at=action==='trash'?new Date().toISOString():null;}
+  else await adminPost('archive-trash',{id:stay.id,action});
+  await load();
+ }catch(error){status.textContent=error.message;button.disabled=false;}
 }
 function decision(stay,action){
  const dialog=document.createElement('dialog');document.body.append(dialog);

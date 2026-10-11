@@ -2,6 +2,7 @@ import {depositMethod,depositSummary,bankAuthorizationMode} from './deposit-poli
 import {cashDepositAction} from './cash-deposit.mjs';
 import {depositDeadline} from './deposit-deadline.mjs';
 import {ownerHealth} from './owner-health.mjs';
+import {archiveTrash} from './archive-trash.mjs';
 import {sendDeliveryTest,deliveryTestPage} from './mail-delivery-test.mjs';
 import {boundedDeadline,parisArrivalAt} from './booking-timing.mjs';
 import {damageAction} from './damage.mjs';
@@ -62,10 +63,17 @@ export async function flowFetch(request,env) {
    }catch{return json(409,{error:'Le document ne peut pas être préparé : vérifiez les données du séjour et la ventilation du prix.'});}
   }
   if(path==='/api/admin/stays' && request.method==='GET') {
-   const rows=await env.BERRY_DB.prepare(`SELECT s.contract_html,cd.received_at AS cash_deposit_received_at,cd.returned_at AS cash_deposit_returned_at,cd.returned_cents AS cash_deposit_returned_cents,cd.retained_reason AS cash_deposit_retained_reason,s.id,s.arrival,s.departure,s.status,s.flow_stage,s.customer_name,s.customer_email,s.customer_phone,s.customer_address,s.comment,s.guests,s.rate,s.early_arrival,s.late_departure,s.total_cents,s.payment_preference,s.payment_due_at,s.paid_at,CASE WHEN s.contract_html IS NULL OR instr(s.contract_html,'berry-document-model')>0 THEN 1 ELSE 0 END AS description_available,d.status AS deposit_status,(SELECT sent_at FROM mail_outbox WHERE stay_id=s.id AND kind='deposit_link') AS deposit_link_sent_at,d.capture_before,d.checked_at,dc.status AS damage_status,dc.amount_cents AS damage_amount,c.refund_cents,c.refund_status,c.retained_cents,c.owed_cents,c.deposit_done,
+   const rows=await env.BERRY_DB.prepare(`SELECT t.deleted_at,s.contract_html,cd.received_at AS cash_deposit_received_at,cd.returned_at AS cash_deposit_returned_at,cd.returned_cents AS cash_deposit_returned_cents,cd.retained_reason AS cash_deposit_retained_reason,s.id,s.arrival,s.departure,s.status,s.flow_stage,s.customer_name,s.customer_email,s.customer_phone,s.customer_address,s.comment,s.guests,s.rate,s.early_arrival,s.late_departure,s.total_cents,s.payment_preference,s.payment_due_at,s.paid_at,CASE WHEN s.contract_html IS NULL OR instr(s.contract_html,'berry-document-model')>0 THEN 1 ELSE 0 END AS description_available,d.status AS deposit_status,(SELECT sent_at FROM mail_outbox WHERE stay_id=s.id AND kind='deposit_link') AS deposit_link_sent_at,d.capture_before,d.checked_at,dc.status AS damage_status,dc.amount_cents AS damage_amount,c.refund_cents,c.refund_status,c.retained_cents,c.owed_cents,c.deposit_done,
     (SELECT COUNT(*) FROM mail_outbox o WHERE o.stay_id=s.id AND o.sent_at IS NULL) AS unsent_notifications
-    FROM stays s LEFT JOIN cash_deposits cd ON cd.stay_id=s.id LEFT JOIN deposits d ON d.stay_id=s.id LEFT JOIN cancellations c ON c.stay_id=s.id LEFT JOIN damage_claims dc ON dc.stay_id=s.id ORDER BY s.created_at DESC LIMIT 100`).all();
+    FROM stays s LEFT JOIN archive_trash t ON t.stay_id=s.id LEFT JOIN cash_deposits cd ON cd.stay_id=s.id LEFT JOIN deposits d ON d.stay_id=s.id LEFT JOIN cancellations c ON c.stay_id=s.id LEFT JOIN damage_claims dc ON dc.stay_id=s.id ORDER BY s.created_at DESC LIMIT 100`).all();
    return json(200,{stays:rows.results.map(stay=>{const {contract_html,...publicStay}=stay;return {...publicStay,tax_details:ownerTaxBreakdown(stay,env),deposit_method:depositMethod(stay),deposit_deadline:depositMethod(stay)==='bank'?depositDeadline(stay.deposit_link_sent_at,stay):null};})});
+  }
+  if(path==='/api/admin/archive-trash'&&request.method==='POST'){
+   if(!originOK(request))return json(403,{error:'Origine interdite'});
+   let data;try{data=await smallJson(request);}catch{return json(400,{error:'Demande invalide'});}
+   const stay=await env.BERRY_DB.prepare('SELECT * FROM stays WHERE id=?').bind(data.id).first();
+   if(!stay)return json(404,{error:'Dossier introuvable.'});
+   try{return json(200,await archiveTrash(stay,data.action,env));}catch(error){return json(409,{error:error.message});}
   }
   if(['/api/admin/cancellation-preview','/api/admin/cancel','/api/admin/cancellation-check','/api/admin/cash-refunded'].includes(path)&&request.method==='POST'){
    if(!originOK(request))return json(403,{error:'Origine interdite'});
