@@ -8,6 +8,6 @@ export function mailDate(value,{time=false}={}) {
  return `${day} à ${hour} (heure de Paris)`;
 }
 export function guestMailText(text) {
- return text.replaceAll(' La durée bancaire effective doit couvrir le séjour et le contrôle de sortie.','')
+ return text.replaceAll('l’option dès 14 h','l’option d’arrivée anticipée dès 14 h').replaceAll(' La durée bancaire effective doit couvrir le séjour et le contrôle de sortie.','')
   .replaceAll('sous déduction des frais justifiés pour dommages.','si aucune dégradation n’est constatée.');
 }

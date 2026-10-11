@@ -110,7 +110,7 @@ if(form){
   const label=document.querySelector('#request-deposit-text');
   if(!label)return;
   if(method!==guaranteePolicy){document.querySelector('#request-deposit').checked=false;guaranteePolicy=method;}
-  label.textContent=method==='cash'?'J’accepte le dépôt de garantie de 300 € en espèces, distinct du prix du séjour, remis en main propre lors d’un rendez-vous le jour de l’arrivée à partir de 17 h 30, contre reçu, puis restitué en main propre le jour du départ après contrôle du logement et sous déduction des frais justifiés pour dommages. L’arrivée autonome et l’option dès 14 h restent possibles.':'J’accepte l’empreinte bancaire standard de 300 € pour le dépôt de garantie, demandée 48 heures avant l’arrivée ou dès la confirmation si celle-ci intervient dans ce délai, distincte du prix du séjour. Le contrat précisera ses modalités et les conséquences d’un refus avant tout paiement.';
+  label.textContent=method==='cash'?'J’accepte le dépôt de garantie de 300 € en espèces, distinct du prix du séjour, remis en main propre lors d’un rendez-vous le jour de l’arrivée à partir de 17 h 30, contre reçu, puis restitué en main propre le jour du départ après contrôle du logement et sous déduction des frais justifiés pour dommages. L’arrivée autonome et l’option d’arrivée anticipée dès 14 h restent possibles.':'J’accepte l’empreinte bancaire standard de 300 € pour le dépôt de garantie, demandée 48 heures avant l’arrivée ou dès la confirmation si celle-ci intervient dans ce délai, distincte du prix du séjour. Le contrat précisera ses modalités et les conséquences d’un refus avant tout paiement.';
   updateRequestButton();
  }
  ['arrivee','depart'].forEach(name=>form.elements[name].addEventListener('change',updateGuarantee));
