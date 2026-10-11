@@ -39,6 +39,13 @@ async function load(){
    text(card,'p',stay.payment_preference==='cash'?'Paiement en espèces à l’arrivée':'Paiement par carte bancaire en ligne');
    const options=[stay.early_arrival?'Arrivée dès 14 h (+ 5 €)':null,stay.late_departure?'Départ jusqu’à midi (+ 5 €)':null].filter(Boolean);
    text(card,'p',options.length?options.join(' · '):'Aucune option d’horaires');
+   if(stay.tax_details){
+    const tax=stay.tax_details,panel=text(card,'details','');panel.className='notice';
+    text(panel,'summary','Détail de la taxe de séjour pour votre déclaration');
+    text(panel,'p',`Part communale (${tax.rate*100} %) : ${money(tax.communal)} · Part départementale (${tax.additionalRate*100} % de la taxe communale) : ${money(tax.departmental)} · Total : ${money(tax.total)}`);
+    for(const day of tax.daily)text(panel,'p',`${new Intl.DateTimeFormat('fr-FR',{dateStyle:'medium',timeZone:'UTC'}).format(new Date(day.date+'T12:00:00Z'))} · ${day.taxable} adulte(s) imposable(s) · par personne : ${money(day.communalPerPerson)} + ${money(day.departmentalPerPerson)} · total de la nuit : ${money(day.total)}`);
+    text(panel,'p',stay.status==='cancelled'?'Séjour annulé : les taxes des nuitées non réalisées ne sont pas dues.':'Montants prévisionnels du contrat. Déclarez uniquement les nuitées effectivement réalisées et les voyageurs imposables ; adaptez en cas de départ anticipé ou d’exonération.');
+   }
    if(stay.customer_address)text(card,'p',stay.customer_address);
    const documents=document.createElement('div');card.append(documents);
    for(const [file,label] of [['contract','Voir le contrat PDF'],['description','Voir la fiche descriptive PDF']]){

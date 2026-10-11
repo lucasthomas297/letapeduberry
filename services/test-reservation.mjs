@@ -8,7 +8,7 @@ import requests,{sendQueuedMail} from './request-worker.mjs';
 import {quoteStay,validateStay} from './stay.mjs';
 import {digest,webhookEvent,checkoutFields,stripeConfigured,stripeObjectModeMatches,stripeWebhookModeMatches,stripe} from './payment.mjs';
 import {adminAuthorized} from './admin-auth.mjs';
-import {contractReady,renderContract,stayBreakdown,savedDocumentModel} from './contract.mjs';
+import {contractReady,renderContract,stayBreakdown,savedDocumentModel,ownerTaxBreakdown} from './contract.mjs';
 import {flowFetch} from './booking-flow.mjs';
 import {reconcilePayments} from './payment-reconciliation.mjs';
 import {calendarExport} from './calendar-export.mjs';
@@ -320,7 +320,9 @@ test('Stripe reconciliation releases expired dates and confirms missed payments 
 test('tax-inclusive prices preserve totals and apply exemptions and optional hours',()=>{
  const stay={arrival:'2026-11-13',departure:'2026-11-15',guests:2,rate:'fixed',total_cents:15000};
  const env={TOURIST_TAX_RATE:'0.05',TOURIST_TAX_ADDITIONAL_RATE:'0.10'};
- assert.deepEqual(stayBreakdown(stay,env),{nights:2,location:14216,options:0,tax:784,total:15000,taxable:2});
+ const {taxDetails,...price}=stayBreakdown(stay,env);
+ assert.deepEqual(price,{nights:2,location:14216,options:0,tax:784,total:15000,taxable:2});
+ assert.equal(taxDetails.communal+taxDetails.departmental,taxDetails.total);
  const exempt=stayBreakdown({...stay,taxable_guests:0},env);assert.equal(exempt.tax,0);assert.equal(exempt.location,15000);
  const option=stayBreakdown({...stay,total_cents:16000,early_arrival:1,late_departure:1},env);assert.equal(option.options,1000);assert.equal(option.tax,784);
  // Some tax-inclusive cent prices have no exact net/tax split after per-person rounding.
@@ -330,7 +332,20 @@ test('tax-inclusive prices preserve totals and apply exemptions and optional hou
 });
 test('January owner-approved tax excludes the departmental addition and preserves the guest total',()=>{
  const stay={arrival:'2027-01-18',departure:'2027-01-22',guests:2,rate:'flex',total_cents:32200,early_arrival:1,late_departure:1};
- assert.deepEqual(stayBreakdown(stay,{TOURIST_TAX_RATE:'0.05',TOURIST_TAX_ADDITIONAL_RATE:'0'}),{nights:4,location:29712,options:1000,tax:1488,total:32200,taxable:2});
+ const {taxDetails,...price}=stayBreakdown(stay,{TOURIST_TAX_RATE:'0.05',TOURIST_TAX_ADDITIONAL_RATE:'0'});
+ assert.deepEqual(price,{nights:4,location:29712,options:1000,tax:1488,total:32200,taxable:2});
+ assert.equal(taxDetails.departmental,0);
+});
+test('owner tax detail preserves the archived rates and reconstructs legacy totals',()=>{
+ const stay={id:'tax-detail',arrival:'2027-01-18',departure:'2027-01-22',guests:2,rate:'flex',total_cents:32200,early_arrival:1,late_departure:1};
+ const env={TOURIST_TAX_RATE:'0.05',TOURIST_TAX_ADDITIONAL_RATE:'0.10'};
+ stay.contract_html=renderContract(stay,env);
+ const detail=ownerTaxBreakdown(stay,{...env,TOURIST_TAX_ADDITIONAL_RATE:'0'});
+ assert.equal(detail.communal,1480);assert.equal(detail.departmental,152);assert.equal(detail.total,1632);
+ assert.equal(detail.daily[0].communalPerPerson,185);assert.equal(detail.daily[0].departmentalPerPerson,19);
+ const model=savedDocumentModel(stay.contract_html);delete model.price.taxDetails;
+ stay.contract_html=stay.contract_html.replace(/<script id="berry-document-model" type="application\/json">[\s\S]*?<\/script>/,`<script id="berry-document-model" type="application/json">${JSON.stringify(model)}</script>`);
+ assert.deepEqual(ownerTaxBreakdown(stay,env),detail);
 });
 test('contract freezes descriptive annex and never prechecks a missing acceptance',()=>{
  const stay={id:'2026-001',arrival:'2026-11-13',departure:'2026-11-15',guests:2,rate:'fixed',total_cents:15000,customer_name:'</script><script>attack</script>'};

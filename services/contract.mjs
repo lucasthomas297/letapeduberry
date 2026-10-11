@@ -14,22 +14,37 @@ export function stayBreakdown(stay,env){
  if(![1,2].includes(guests)||!Number.isInteger(taxable)||taxable<0||taxable>guests)throw new Error('Occupants imposables invalides');
  const rate=Number(env.TOURIST_TAX_RATE??.05),additional=Number(env.TOURIST_TAX_ADDITIONAL_RATE??0);
  if(!Number.isFinite(rate)||rate<0||rate>.05||!Number.isFinite(additional)||additional<0||additional>1)throw new Error('Barème de taxe invalide');
- let tax=0,gross=0;
+ let tax=0,gross=0,communalTotal=0,departmentalTotal=0;const daily=[];
  for(let i=0;i<nights;i++){
   const day=new Date(Date.parse(stay.arrival)+i*86400000),weekend=[5,6].includes(day.getUTCDay());
   const total=stay.rate==='fixed'?(weekend?7500:7000):(weekend?8400:7800);gross+=total;
   const cap=day.getUTCFullYear()>=2027?490:420;
   const estimate=Math.round(total/(1+rate*(1+additional)*taxable/guests));
-  let found;
+  let found,nightDetail;
   for(let net=Math.max(0,estimate-10);net<=Math.min(total,estimate+10);net++){
    const communal=Math.min(cap,Math.round(net/guests*rate)),perPerson=communal+Math.round(communal*additional);
-   if(net+perPerson*taxable===total){found=perPerson*taxable;break;}
+   if(net+perPerson*taxable===total){found=perPerson*taxable;nightDetail={date:day.toISOString().slice(0,10),rent:net,communalPerPerson:communal,departmentalPerPerson:Math.round(communal*additional),taxable,total:found};break;}
   }
   if(found===undefined)throw new Error('Répartition de taxe à vérifier');
   tax+=found;
+  communalTotal+=nightDetail.communalPerPerson*taxable;departmentalTotal+=nightDetail.departmentalPerPerson*taxable;daily.push(nightDetail);
  }
  if(gross+options!==stay.total_cents)throw new Error('Le tarif enregistré nécessite une ventilation manuelle');
- return {nights,location:stay.total_cents-options-tax,options,tax,total:stay.total_cents,taxable};
+ return {nights,location:stay.total_cents-options-tax,options,tax,total:stay.total_cents,taxable,taxDetails:{rate,additionalRate:additional,communal:communalTotal,departmental:departmentalTotal,total:tax,daily}};
+}
+// Use the archived contract's amounts, never today's settings, for an accepted stay.
+export function ownerTaxBreakdown(stay,env){
+ const saved=stay.contract_html?savedDocumentModel(stay.contract_html):null;
+ if(stay.contract_html&&!saved)return null;
+ if(saved?.price?.taxDetails)return saved.price.taxDetails;
+ if(saved){
+  for(const additional of ['0.10','0'])try{
+   const b=stayBreakdown(stay,{...env,TOURIST_TAX_ADDITIONAL_RATE:additional});
+   if(b.tax===saved.price.tax&&b.location===saved.price.location)return b.taxDetails;
+  }catch{}
+  return null;
+ }
+ try{return stayBreakdown(stay,env).taxDetails;}catch{return null;}
 }
 export function documentModel(stay,env){
  const b=stayBreakdown(stay,env);
