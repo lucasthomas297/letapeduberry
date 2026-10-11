@@ -1,4 +1,4 @@
-import {stripe} from './payment.mjs';
+import {stripe,paymentEnvironment} from './payment.mjs';
 import {refreshDeposit} from './deposit.mjs';
 function departureAt(stay){
  const hour=stay.late_departure?12:11,utc=Date.parse(stay.departure+'T00:00:00Z')+hour*3600000;
@@ -29,6 +29,7 @@ async function complete(claim,intent,env){
  return {status:'captured',amountCents:claim.amount_cents};
 }
 export async function damageAction(stay,data,env){
+ env=paymentEnvironment(stay,env);
  if(stay.status!=='confirmed')throw Error('Le séjour doit être confirmé.');
  if(Date.now()<departureAt(stay))throw Error('La retenue se prépare après le départ et le contrôle du logement.');
  const db=env.BERRY_DB;

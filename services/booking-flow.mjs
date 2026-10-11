@@ -9,7 +9,7 @@ import {damageAction} from './damage.mjs';
 import {contractPdf,descriptionPdf} from './contract-pdf.mjs';
 import {adminAuthorized} from './admin-auth.mjs';
 import {renderContract,renderContractModel,contractReady,escapeHtml,savedDocumentModel,ownerTaxBreakdown} from './contract.mjs';
-import {stripe,checkoutFields,digest,webhookEvent,stripeWebhookModeMatches} from './payment.mjs';
+import {stripe,checkoutFields,digest,webhookEvent,stripeWebhookModeMatches,paymentEnvironment,ownerTestConfigured,paymentEventMatchesStay} from './payment.mjs';
 import availability from './availability-worker.mjs';
 import {overlaps} from './calendar.mjs';
 import {depositAction,depositEvent,refreshDeposit} from './deposit.mjs';
@@ -46,6 +46,14 @@ export async function flowFetch(request,env) {
    const result=await sendDeliveryTest(env,sendQueuedMail);
    return result.accepted?deliveryTestPage(true):json(503,{error:'Le message test n’a pas été accepté. Aucun dossier créé.'});
   }
+  if(path==='/api/admin/payment-test' && request.method==='POST') {
+   if(!originOK(request))return json(403,{error:'Origine interdite'});
+   let data;try{data=await smallJson(request);}catch{return json(400,{error:'Demande invalide'});}
+   if(data.confirmed!==true)return json(400,{error:'Confirmez le test Stripe et le blocage réel des dates.'});
+   if(!ownerTestConfigured(env))return json(503,{error:'Stripe en mode test n’est pas encore raccordé. Aucun paiement réel engagé.'});
+   const result=await env.BERRY_DB.prepare("UPDATE stays SET payment_test=1 WHERE id=? AND status='pending' AND payment_preference='card' AND lower(customer_email)=lower(?) AND stripe_checkout_id IS NULL AND contract_html IS NULL").bind(data.id,env.OWNER_EMAIL).run();
+   return result.meta?.changes?json(200,{ok:true}):json(409,{error:'Seule votre propre demande par carte, encore à étudier, peut passer en mode test.'});
+  }
   if(path==='/api/admin/health')return request.method==='GET'?json(200,await ownerHealth(env)):json(405,{error:'Méthode interdite'});
   if(path==='/api/admin/contract.pdf' || path==='/api/admin/description.pdf') {
    if(request.method!=='GET')return json(405,{error:'Méthode interdite'});
@@ -63,10 +71,10 @@ export async function flowFetch(request,env) {
    }catch{return json(409,{error:'Le document ne peut pas être préparé : vérifiez les données du séjour et la ventilation du prix.'});}
   }
   if(path==='/api/admin/stays' && request.method==='GET') {
-   const rows=await env.BERRY_DB.prepare(`SELECT t.deleted_at,s.contract_html,cd.received_at AS cash_deposit_received_at,cd.returned_at AS cash_deposit_returned_at,cd.returned_cents AS cash_deposit_returned_cents,cd.retained_reason AS cash_deposit_retained_reason,s.id,s.arrival,s.departure,s.status,s.flow_stage,s.customer_name,s.customer_email,s.customer_phone,s.customer_address,s.comment,s.guests,s.rate,s.early_arrival,s.late_departure,s.total_cents,s.payment_preference,s.payment_due_at,s.paid_at,CASE WHEN s.contract_html IS NULL OR instr(s.contract_html,'berry-document-model')>0 THEN 1 ELSE 0 END AS description_available,d.status AS deposit_status,(SELECT sent_at FROM mail_outbox WHERE stay_id=s.id AND kind='deposit_link') AS deposit_link_sent_at,d.capture_before,d.checked_at,dc.status AS damage_status,dc.amount_cents AS damage_amount,c.refund_cents,c.refund_status,c.retained_cents,c.owed_cents,c.deposit_done,
+   const rows=await env.BERRY_DB.prepare(`SELECT t.deleted_at,s.contract_html,cd.received_at AS cash_deposit_received_at,cd.returned_at AS cash_deposit_returned_at,cd.returned_cents AS cash_deposit_returned_cents,cd.retained_reason AS cash_deposit_retained_reason,s.id,s.payment_test,s.arrival,s.departure,s.status,s.flow_stage,s.customer_name,s.customer_email,s.customer_phone,s.customer_address,s.comment,s.guests,s.rate,s.early_arrival,s.late_departure,s.total_cents,s.payment_preference,s.payment_due_at,s.paid_at,CASE WHEN s.contract_html IS NULL OR instr(s.contract_html,'berry-document-model')>0 THEN 1 ELSE 0 END AS description_available,d.status AS deposit_status,(SELECT sent_at FROM mail_outbox WHERE stay_id=s.id AND kind='deposit_link') AS deposit_link_sent_at,d.capture_before,d.checked_at,dc.status AS damage_status,dc.amount_cents AS damage_amount,c.refund_cents,c.refund_status,c.retained_cents,c.owed_cents,c.deposit_done,
     (SELECT COUNT(*) FROM mail_outbox o WHERE o.stay_id=s.id AND o.sent_at IS NULL) AS unsent_notifications
     FROM stays s LEFT JOIN archive_trash t ON t.stay_id=s.id LEFT JOIN cash_deposits cd ON cd.stay_id=s.id LEFT JOIN deposits d ON d.stay_id=s.id LEFT JOIN cancellations c ON c.stay_id=s.id LEFT JOIN damage_claims dc ON dc.stay_id=s.id ORDER BY s.created_at DESC LIMIT 100`).all();
-   return json(200,{stays:rows.results.map(stay=>{const {contract_html,...publicStay}=stay;return {...publicStay,tax_details:ownerTaxBreakdown(stay,env),deposit_method:depositMethod(stay),deposit_deadline:depositMethod(stay)==='bank'?depositDeadline(stay.deposit_link_sent_at,stay):null};})});
+   return json(200,{stays:rows.results.map(stay=>{const {contract_html,...publicStay}=stay;return {...publicStay,tax_details:ownerTaxBreakdown(stay,env),payment_test_available:ownerTestConfigured(env)&&stay.status==='pending'&&stay.payment_preference==='card'&&stay.customer_email?.toLowerCase()===env.OWNER_EMAIL?.toLowerCase(),deposit_method:depositMethod(stay),deposit_deadline:depositMethod(stay)==='bank'?depositDeadline(stay.deposit_link_sent_at,stay):null};})});
   }
   if(path==='/api/admin/archive-trash'&&request.method==='POST'){
    if(!originOK(request))return json(403,{error:'Origine interdite'});
@@ -129,6 +137,7 @@ export async function flowFetch(request,env) {
    return json(200,{ok:true});
   }
   if(data.action!=='approve')return json(400,{error:'Décision invalide'});
+  try{paymentEnvironment(stay,env);}catch(error){return json(503,{error:error.message});}
   if(depositMethod(stay)==='bank'&&bankAuthorizationMode(stay)==='extended'&&env.STRIPE_EXTENDED_AUTHORIZATION_ENABLED!=='true')return json(409,{error:'Stripe doit autoriser les empreintes prolongées avant l’acceptation de ce séjour. Aucun lien de paiement n’a été envoyé.'});
   if(!stay.insurance_accepted_at)return json(409,{error:'Le voyageur doit confirmer son assurance avant acceptation de cette demande.'});
   if(!contractReady(env))return json(503,{error:'Le contrat doit être complété et validé avant acceptation.'});
@@ -173,7 +182,7 @@ export async function flowFetch(request,env) {
    return json(200,{status:stay.status,reference:stay.id.slice(0,8)});
   }
 
-  if(path==='/api/guest/stay' && request.method==='GET' && (stay.status==='confirmed' || (stay.status==='awaiting_payment' && Date.parse(stay.payment_due_at)>Date.now())))return json(200,{status:stay.status,depositMethod:depositMethod(stay),depositSummary:depositSummary(stay),payment:stay.payment_preference,paid:Boolean(stay.paid_at),reference:stay.id.slice(0,8),arrival:stay.arrival,departure:stay.departure,totalCents:stay.total_cents,deadline:stay.payment_due_at,descriptionAvailable:Boolean(savedDocumentModel(stay.contract_html)),contractHtml:stay.contract_accepted_at&&savedDocumentModel(stay.contract_html)?renderContractModel({...savedDocumentModel(stay.contract_html),accepted:true,acceptedAt:stay.contract_accepted_at,signer:stay.contract_signer}):stay.contract_html,contractHash:stay.contract_hash,checkoutUrl:stay.checkout_url});
+  if(path==='/api/guest/stay' && request.method==='GET' && (stay.status==='confirmed' || (stay.status==='awaiting_payment' && Date.parse(stay.payment_due_at)>Date.now())))return json(200,{status:stay.status,paymentTest:stay.payment_test===1,depositMethod:depositMethod(stay),depositSummary:depositSummary(stay),payment:stay.payment_preference,paid:Boolean(stay.paid_at),reference:stay.id.slice(0,8),arrival:stay.arrival,departure:stay.departure,totalCents:stay.total_cents,deadline:stay.payment_due_at,descriptionAvailable:Boolean(savedDocumentModel(stay.contract_html)),contractHtml:stay.contract_accepted_at&&savedDocumentModel(stay.contract_html)?renderContractModel({...savedDocumentModel(stay.contract_html),accepted:true,acceptedAt:stay.contract_accepted_at,signer:stay.contract_signer}):stay.contract_html,contractHash:stay.contract_hash,checkoutUrl:stay.checkout_url});
   if(path==='/api/guest/accept'&&request.method==='POST'&&stay.status==='awaiting_payment'&&depositMethod(stay)==='bank'&&bankAuthorizationMode(stay)==='extended'&&env.STRIPE_EXTENDED_AUTHORIZATION_ENABLED!=='true')return json(503,{error:'La garantie bancaire de ce séjour doit être activée avant sa confirmation. Contactez-nous ; aucun paiement n’est demandé.'});
   if(path==='/api/guest/accept'&&request.method==='POST'&&stay.payment_preference==='cash'&&stay.status==='confirmed')return json(200,{confirmed:true});
   if(stay.status!=='awaiting_payment' || Date.parse(stay.payment_due_at)<=Date.now())return json(410,{error:stay.payment_preference==='cash'?'Ce lien d’acceptation n’est plus disponible. Contactez-nous.':'Ce lien de paiement n’est plus disponible. Contactez-nous.'});
@@ -197,12 +206,16 @@ export async function flowFetch(request,env) {
   if(Date.parse(stay.payment_due_at)-Date.now()<31*60000)return json(410,{error:'Le délai de paiement touche à sa fin. Contactez-nous pour un nouveau lien.'});
   const acceptedAt=new Date().toISOString();
   await env.BERRY_DB.prepare('UPDATE stays SET contract_accepted_at=COALESCE(contract_accepted_at,?),contract_signer=COALESCE(contract_signer,?) WHERE id=?').bind(acceptedAt,data.signer.trim(),stay.id).run();
-  let session;try{session=await stripe(env,'checkout/sessions',checkoutFields(stay,env.SITE_ORIGIN),'stay-'+stay.id);}catch{return json(503,{error:'Paiement momentanément indisponible. Votre acceptation est conservée.'});}
+  let session;try{session=await stripe(paymentEnvironment(stay,env),'checkout/sessions',checkoutFields(stay,env.SITE_ORIGIN),'stay-'+stay.id);}catch{return json(503,{error:'Paiement momentanément indisponible. Votre acceptation est conservée.'});}
   if(!session.id || !session.url?.startsWith('https://checkout.stripe.com/'))return json(502,{error:'Réponse de paiement invalide'});
   await env.BERRY_DB.prepare("UPDATE stays SET stripe_checkout_id=?,checkout_url=?,flow_stage='payment' WHERE id=? AND status='awaiting_payment'").bind(session.id,session.url,stay.id).run();
   return json(200,{url:session.url});
  }
- if(path==='/api/stripe/webhook') {
+ if(path==='/api/stripe/webhook' || path==='/api/stripe/webhook-test') {
+  if(path.endsWith('webhook-test')) {
+   if(!ownerTestConfigured(env))return json(503,{error:'Test Stripe non configuré'});
+   env={...env,STRIPE_MODE:'test',STRIPE_SECRET_KEY:env.STRIPE_TEST_SECRET_KEY,STRIPE_WEBHOOK_SECRET:env.STRIPE_TEST_WEBHOOK_SECRET,STRIPE_WEBHOOK_ENABLED:'true',STRIPE_OWNER_TEST_CONTEXT:true};
+  }
   if(request.method!=='POST')return json(405,{error:'Méthode interdite'});
   const length=Number(request.headers.get('Content-Length'));
   if(request.headers.has('Content-Length') && (!Number.isInteger(length) || length<1 || length>1000000))return json(413,{error:'Événement trop volumineux ou taille invalide'});
@@ -211,6 +224,7 @@ export async function flowFetch(request,env) {
   if(await env.BERRY_DB.prepare('SELECT id FROM stripe_events WHERE id=?').bind(event.id).first())return json(200,{received:true});
   if(!['checkout.session.completed','checkout.session.expired'].includes(event.type))return json(200,{received:true});
   const session=event.data?.object;
+  if(typeof session?.livemode==='boolean'&&session.livemode!==event.livemode)return json(400,{error:'Mode de session incohérent'});
   if(session?.metadata?.purpose==='deposit') {
    try{await depositEvent(session,env);return json(200,{received:true});}catch{return json(409,{error:'Empreinte à vérifier'});}
   }
@@ -225,6 +239,7 @@ export async function processStaySession(session,type,eventId,env) {
  if(await env.BERRY_DB.prepare('SELECT id FROM stripe_events WHERE id=?').bind(eventId).first())return json(200,{received:true});
   const stay=await env.BERRY_DB.prepare('SELECT * FROM stays WHERE id=? AND stripe_checkout_id=?').bind(session.metadata.reservation_id,session.id).first();
   if(!stay)return json(409,{error:'Session non rattachée. Nouvelle tentative nécessaire.'});
+  if(!paymentEventMatchesStay(stay,env))return json(409,{error:'Mode du dossier incompatible avec Stripe'});
   if(type==='checkout.session.completed' && (session.payment_status!=='paid' || session.amount_total!==stay.total_cents || session.currency!=='eur' || !stay.contract_accepted_at))return json(409,{error:'Paiement à vérifier'});
   if(!['awaiting_payment','confirmed'].includes(stay.status))return json(409,{error:'État du séjour à vérifier manuellement'});
   const timestamp=new Date().toISOString(),paid=type==='checkout.session.completed';

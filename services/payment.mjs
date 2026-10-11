@@ -47,3 +47,21 @@ export async function webhookEvent(payload,signature,secret,now=Date.now()) {
  }
  if(!valid)throw new Error('Signature incorrecte');return JSON.parse(payload);
 }
+
+// Persisted owner-only marker: never select credentials from a guest parameter.
+export const isOwnerPaymentTest=stay=>stay?.payment_test===1;
+export function ownerTestConfigured(env) {
+ return env.OWNER_PAYMENT_TEST_ENABLED==='true' && /^(sk|rk)_test_/.test(env.STRIPE_TEST_SECRET_KEY||'') && /^whsec_/.test(env.STRIPE_TEST_WEBHOOK_SECRET||'') && Boolean(env.OWNER_EMAIL);
+}
+export function paymentEnvironment(stay,env) {
+ if(!isOwnerPaymentTest(stay)) {
+  if(env.STRIPE_OWNER_TEST_CONTEXT===true)throw Error('Événement de test sans dossier de test.');
+  return env;
+ }
+ if(!ownerTestConfigured(env)||stay.customer_email?.toLowerCase()!==env.OWNER_EMAIL.toLowerCase())throw Error('Essai Stripe propriétaire non configuré. Aucun paiement réel engagé.');
+ return {...env,STRIPE_MODE:'test',STRIPE_SECRET_KEY:env.STRIPE_TEST_SECRET_KEY,STRIPE_WEBHOOK_SECRET:env.STRIPE_TEST_WEBHOOK_SECRET,STRIPE_WEBHOOK_ENABLED:'true',STRIPE_LIVE_ENABLED:'false',STRIPE_OWNER_TEST_CONTEXT:true};
+}
+export function paymentEventMatchesStay(stay,env) {
+ if(env.STRIPE_OWNER_TEST_CONTEXT===true)return isOwnerPaymentTest(stay);
+ return !isOwnerPaymentTest(stay);
+}

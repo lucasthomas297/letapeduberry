@@ -23,6 +23,8 @@ export async function sendQueuedMail(env,{testOnly=false}={}) {
  const cutoff=new Date(Date.now()-23*3600000).toISOString();
  const queue=await env.BERRY_DB.prepare(`SELECT o.id AS mail_id,o.kind,o.payload,s.* FROM mail_outbox o JOIN stays s ON s.id=o.stay_id WHERE o.sent_at IS NULL AND o.created_at>=? ORDER BY o.created_at LIMIT 20`).bind(cutoff).all();
  for(const stay of queue.results) {
+  const ownerPaymentTest=stay.payment_test===1;
+  if(ownerPaymentTest&&stay.customer_email?.toLowerCase()!==env.OWNER_EMAIL?.toLowerCase())continue;
   const physicalDeposit=depositMethod(stay)==='cash';
   if(physicalDeposit&&['deposit_link','deposit_overdue'].includes(stay.kind)){await env.BERRY_DB.prepare("UPDATE mail_outbox SET sent_at=?,provider_id='suppressed-cash-deposit' WHERE id=? AND sent_at IS NULL").bind(new Date().toISOString(),stay.mail_id).run();continue;}
   if(stay.status==='cancelled'&&['payment_link','confirmation','deposit_link'].includes(stay.kind)){await env.BERRY_DB.prepare("UPDATE mail_outbox SET sent_at=?,provider_id='suppressed-cancelled' WHERE id=? AND sent_at IS NULL").bind(new Date().toISOString(),stay.mail_id).run();continue;}
@@ -77,7 +79,7 @@ export async function sendQueuedMail(env,{testOnly=false}={}) {
     attachments=[{filename:'contrat-location.pdf',content:encode(await contractPdf(receipt,{accepted:Boolean(stay.contract_accepted_at),acceptedAt:stay.contract_accepted_at,signer:stay.contract_signer}))}];
     if(savedDocumentModel(stay.contract_html))attachments.push({filename:'fiche-descriptive.pdf',content:encode(await descriptionPdf(stay.contract_html))});
    }
-   const response=await fetch('https://api.resend.com/emails',{method:'POST',headers:{Authorization:`Bearer ${env.RESEND_API_KEY}`,'Content-Type':'application/json','Idempotency-Key':`berry-${stay.mail_id}`},body:JSON.stringify({from:env.CONTACT_FROM,to:[owner?'contact@letapeduberry.fr':stay.customer_email],reply_to:owner?stay.customer_email:'contact@letapeduberry.fr',subject:(testOnly?'TEST — ':'')+(stay.kind==='payment_link'&&stay.payment_preference==='cash'?'Votre séjour accepté — contrat à confirmer':subjects[stay.kind]||'Votre séjour')+' — L’Étape du Berry',text:(testOnly?'ESSAI TECHNIQUE : aucune réservation ni aucun paiement réel. Les dates et le voyageur ci-dessous sont fictifs.\n\n':'')+(owner?text:guestMailText(text)),attachments}),signal:AbortSignal.timeout(12000)});
+   const response=await fetch('https://api.resend.com/emails',{method:'POST',headers:{Authorization:`Bearer ${env.RESEND_API_KEY}`,'Content-Type':'application/json','Idempotency-Key':`berry-${stay.mail_id}`},body:JSON.stringify({from:env.CONTACT_FROM,to:[owner?'contact@letapeduberry.fr':stay.customer_email],reply_to:owner?stay.customer_email:'contact@letapeduberry.fr',subject:(testOnly||ownerPaymentTest?'TEST — ':'')+(stay.kind==='payment_link'&&stay.payment_preference==='cash'?'Votre séjour accepté — contrat à confirmer':subjects[stay.kind]||'Votre séjour')+' — L’Étape du Berry',text:(ownerPaymentTest?'ESSAI PROPRIÉTAIRE : paiement et remboursement simulés par Stripe, sans débit ni frais. Ces dates sont réellement bloquées dans les calendriers jusqu’à l’annulation.\n\n':'')+(testOnly?'ESSAI TECHNIQUE : aucune réservation ni aucun paiement réel. Les dates et le voyageur ci-dessous sont fictifs.\n\n':'')+(owner?text:guestMailText(text)),attachments}),signal:AbortSignal.timeout(12000)});
    const result=await response.json();
    if(response.ok && result.id)await env.BERRY_DB.prepare('UPDATE mail_outbox SET sent_at=?,provider_id=? WHERE id=? AND sent_at IS NULL').bind(new Date().toISOString(),result.id,stay.mail_id).run();
   } catch { /* Keep the queue entry; retry without exposing personal data in logs. */ }
@@ -102,9 +104,9 @@ export default {
   if(url.pathname.startsWith('/calendrier/direct/')) {
    try{return await calendarExport(request,env);}catch{return new Response('Calendrier indisponible',{status:503});}
   }
-  if(url.pathname.startsWith('/api/admin/') || url.pathname.startsWith('/api/guest/') || url.pathname==='/api/stripe/webhook') {
+  if(url.pathname.startsWith('/api/admin/') || url.pathname.startsWith('/api/guest/') || ['/api/stripe/webhook','/api/stripe/webhook-test'].includes(url.pathname)) {
    if(!env.BERRY_DB)return json(503,{error:'Service non configuré'});
-   try{const response=await flowFetch(request,env)||json(404,{error:'Introuvable'});if(response.ok && request.method==='POST' && url.pathname!=='/api/admin/mail-test' && (url.pathname.startsWith('/api/admin/') || url.pathname==='/api/stripe/webhook'||url.pathname==='/api/guest/accept'))ctx.waitUntil((async()=>{await sendQueuedMail(env);await requestDueDeposits(env);await sendQueuedMail(env);await queueGuestMessages(env);await sendQueuedMail(env);})());return response;}catch{return json(503,{error:'Service momentanément indisponible'});}
+   try{const response=await flowFetch(request,env)||json(404,{error:'Introuvable'});if(response.ok && request.method==='POST' && url.pathname!=='/api/admin/mail-test' && (url.pathname.startsWith('/api/admin/') || ['/api/stripe/webhook','/api/stripe/webhook-test'].includes(url.pathname)||url.pathname==='/api/guest/accept'))ctx.waitUntil((async()=>{await sendQueuedMail(env);await requestDueDeposits(env);await sendQueuedMail(env);await queueGuestMessages(env);await sendQueuedMail(env);})());return response;}catch{return json(503,{error:'Service momentanément indisponible'});}
   }
   if(url.pathname==='/api/availability')return availability.fetch(request,env);
   if(url.pathname==='/api/status')return request.method==='GET'?json(200,{requests_ready:Boolean(ready(env))}):json(405,{error:'Méthode interdite'});

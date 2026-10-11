@@ -1,6 +1,6 @@
 import {depositMethod} from './deposit-policy.mjs';
 import {savedDocumentModel} from './contract.mjs';
-import {stripe,digest} from './payment.mjs';
+import {stripe,digest,paymentEnvironment} from './payment.mjs';
 import {depositRequestDueAt,refreshDeposit} from './deposit.mjs';
 const mail=(db,id,kind,payload={})=>db.prepare('INSERT OR IGNORE INTO mail_outbox(id,stay_id,kind,created_at,payload) VALUES (?,?,?,?,?)').bind(crypto.randomUUID(),id,kind,new Date().toISOString(),JSON.stringify(payload));
 export async function cancellationPlan(stay,data){
@@ -24,6 +24,7 @@ export async function cancellationPlan(stay,data){
  return {...plan,hash:await digest(JSON.stringify(plan))};
 }
 async function cancelGuarantee(stay,env){
+ env=paymentEnvironment(stay,env);
  if(depositMethod(stay)==='cash'){const row=await env.BERRY_DB.prepare('SELECT returned_at FROM cash_deposits WHERE stay_id=?').bind(stay.id).first();return !row||Boolean(row.returned_at);}
  let deposit=await refreshDeposit(stay,env);
  if(!deposit||['released','expired','failed'].includes(deposit.status))return true;
@@ -41,6 +42,7 @@ async function cancelGuarantee(stay,env){
  return false;
 }
 export async function processCancellation(stay,env){
+ env=paymentEnvironment(stay,env);
  const db=env.BERRY_DB,cancel=await db.prepare('SELECT * FROM cancellations WHERE stay_id=?').bind(stay.id).first();
  if(!cancel)return;
  if(cancel.refund_status==='pending')try{

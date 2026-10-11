@@ -4,6 +4,8 @@ const headers={Authorization:'Bearer '+token};let stay;
 async function load(){try{
  const response=await fetch('/api/guest/stay',{headers});stay=await response.json();if(!response.ok)throw new Error(stay.error);
  const cash=stay.payment==='cash';
+ document.querySelector('#payment-test-notice')?.remove();
+ if(stay.paymentTest){const notice=document.createElement('p');notice.id='payment-test-notice';notice.className='notice';notice.textContent='TEST STRIPE : utilisez uniquement une carte fictive. Aucun débit ni frais. Les dates de cet essai sont réellement bloquées jusqu’à son annulation.';document.querySelector('#stay-summary').after(notice);}
  document.querySelector('#accept-deposit-text').textContent='J’accepte les modalités du dépôt de garantie prévues au contrat. '+stay.depositSummary;
  document.querySelector('h1').textContent=cash?'Votre contrat et votre séjour':'Votre contrat et votre paiement';
  document.querySelector('#stay-summary').textContent=`Du ${stay.arrival} au ${stay.departure} · ${(stay.totalCents/100).toFixed(2)} € · Référence ${stay.reference}`;

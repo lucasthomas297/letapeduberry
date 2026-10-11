@@ -5,6 +5,7 @@ main = "request-worker.mjs"
 compatibility_date = "2026-10-04"
 workers_dev = false
 routes = [
+ { pattern = "letapeduberry.fr/api/stripe/webhook-test", zone_name = "letapeduberry.fr" },
  { pattern = "letapeduberry.fr/api/stripe/webhook", zone_name = "letapeduberry.fr" },
  { pattern = "letapeduberry.fr/api/availability", zone_name = "letapeduberry.fr" },
  { pattern = "letapeduberry.fr/api/status", zone_name = "letapeduberry.fr" },
@@ -22,6 +23,7 @@ migrations_dir = "migrations"
 # Enable only after Stripe confirms account eligibility; actual capture_before is still checked.
 STRIPE_EXTENDED_AUTHORIZATION_ENABLED = "false"
 STRIPE_MODE = "live"
+OWNER_PAYMENT_TEST_ENABLED = "true"
 STRIPE_WEBHOOK_ENABLED = "true"
 STRIPE_LIVE_ENABLED = "true"
 REQUESTS_ENABLED = "true"

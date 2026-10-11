@@ -1,5 +1,5 @@
 import {depositMethod,bankAuthorizationMode} from './deposit-policy.mjs';
-import {stripe,checkoutFields} from './payment.mjs';
+import {stripe,checkoutFields,paymentEnvironment,paymentEventMatchesStay} from './payment.mjs';
 import {parisDay,dateNumber} from './calendar.mjs';
 function parisTime(date,hour){
  const utc=dateNumber(date)+hour*3600000;
@@ -9,6 +9,7 @@ function parisTime(date,hour){
 }
 export function depositRequestDueAt(stay){return parisTime(stay.arrival,stay.early_arrival?14:16)-48*3600000;}
 export async function refreshDeposit(stay,env) {
+ env=paymentEnvironment(stay,env);
  const db=env.BERRY_DB,deposit=await db.prepare('SELECT * FROM deposits WHERE stay_id=?').bind(stay.id).first();
  if(!deposit||['released','captured','expired','failed'].includes(deposit.status))return deposit;
  if(deposit.status==='requested'){
@@ -29,6 +30,7 @@ export async function reconcileDeposits(env){
  for(const stay of rows.results)try{await refreshDeposit(stay,env);}catch{ /* Preserve uncertain status; owner can retry verification. */ }
 }
 export async function depositAction(stay,data,env) {
+ env=paymentEnvironment(stay,env);
  if(stay.status!=='confirmed')throw new Error('Le séjour doit être confirmé.');
  const db=env.BERRY_DB;
  if(depositMethod(stay)==='cash')throw Error('Ce séjour prévoit un dépôt en espèces, sans opération Stripe.');
@@ -75,13 +77,15 @@ export async function depositEvent(session,env) {
  const db=env.BERRY_DB,deposit=await db.prepare('SELECT * FROM deposits WHERE checkout_id=? AND stay_id=?').bind(session.id,session.metadata.reservation_id).first();
  if(!deposit)return; // A replaced, expired session must never update the new attempt.
  if(['released','captured','expired','failed'].includes(deposit.status))return;
+ const stay=await db.prepare('SELECT * FROM stays WHERE id=?').bind(deposit.stay_id).first();
+ if(!stay||!paymentEventMatchesStay(stay,env))throw Error('Mode de garantie incompatible');
+ env=paymentEnvironment(stay,env);
  const time=new Date().toISOString();
  if(session.status==='expired') {if(deposit.status==='requested')await db.prepare("UPDATE deposits SET status='expired',checked_at=? WHERE stay_id=? AND checkout_id=? AND status='requested'").bind(time,deposit.stay_id,session.id).run();return;}
  const id=typeof session.payment_intent==='string'?session.payment_intent:session.payment_intent?.id;
  if(!/^pi_[A-Za-z0-9]+$/.test(id||''))throw new Error('Empreinte Stripe invalide');
  const intent=await stripe(env,'payment_intents/'+id+'?expand[]=latest_charge');
  const before=intent.latest_charge?.payment_method_details?.card?.capture_before;
- const stay=await db.prepare('SELECT departure,late_departure FROM stays WHERE id=?').bind(deposit.stay_id).first();
  const hours=Number(env.DEPOSIT_RELEASE_HOURS||48);
  if(!Number.isInteger(hours)||hours<0||hours>168)throw new Error('Délai de contrôle invalide');
  const enough=Number(before)*1000>Math.max(Date.now(),parisTime(stay.departure,stay.late_departure?12:11)+hours*3600000);

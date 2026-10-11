@@ -1,5 +1,5 @@
 import {contractReady} from './contract.mjs';
-import {stripeConfigured} from './payment.mjs';
+import {stripeConfigured,ownerTestConfigured} from './payment.mjs';
 
 // Only call after the owner has authenticated. Never return secret values.
 export async function ownerHealth(env,now=Date.now()) {
@@ -11,6 +11,7 @@ export async function ownerHealth(env,now=Date.now()) {
   {label:'Code d’arrivée',ok:Boolean(env.ACCESS_KEYBOX_CODE?.trim())},
   {label:'Lien privé du calendrier du site',ok:Boolean(env.CALENDAR_EXPORT_TOKEN?.length>=48)},
   {label:'Connexion Stripe pour les empreintes standards',ok:Boolean(env.STRIPE_SECRET_KEY)},
+  {label:'Essai Stripe réservé au propriétaire',ok:ownerTestConfigured(env)},
   {label:'Paiements activés',ok:Boolean(stripeConfigured(env))},
   {label:'Demandes de réservation activées',ok:env.REQUESTS_ENABLED==='true'}
  ];
