@@ -1,5 +1,5 @@
 import PDFLib from './vendor/pdf-lib.cjs';
-import {savedDocumentModel,euros,arrivalTerms} from './contract.mjs';
+import {savedDocumentModel,euros,arrivalTerms,priceRows} from './contract.mjs';
 import {contractPdf as legacyPdf,contractBlocks} from './contract-pdf-legacy.mjs';
 import photo64 from './pdf-photo.mjs';
 export {contractBlocks};
@@ -36,15 +36,18 @@ async function createDocument(m,type){
   if(checked){page.drawLine({start:{x:x+1.5,y:yy+3},end:{x:x+4,y:yy+.5},thickness:1.1,color:ink});page.drawLine({start:{x:x+4,y:yy+.5},end:{x:x+8,y:yy+6.5},thickness:1.1,color:ink});}
   ls.forEach((l,i)=>draw(l,x+19,yy-i*13,9.5));return h+9;
  }
- function totals(x,top,w){const h=146;round(x,top,w,h);
+ function totalsHeight(w){return Math.max(146,47+priceRows(m).reduce((height,[label])=>height+Math.max(19,lines(label,9.0,w-94).length*12+7),0));}
+ function totals(x,top,w){const h=totalsHeight(w);round(x,top,w,h);
   round(x,top,w,31,ink,7);draw('Montant de votre séjour',x+12,top-20,11,bold,white);
-  const rows=[['Prix de la location',m.price.location],['Prix des options éventuelles',m.price.options],['Taxe de séjour',m.price.tax],['TOTAL',m.price.total]];
-  rows.forEach(([t,n],i)=>{const yy=top-52-i*24;draw(t,x+12,yy,9.3,i===3?bold:font);const v=clean(euros(n));draw(v,x+w-12-(i===3?bold:font).widthOfTextAtSize(v,10),yy,10,i===3?bold:font);});
-  page.drawLine({start:{x:x+12,y:top-108},end:{x:x+w-12,y:top-108},thickness:.5,color:gold});return h;
+  const rows=priceRows(m);let yy=top-52;
+  rows.forEach(([t,n],i)=>{const last=i===rows.length-1,f=last?bold:font,ls=lines(t,9.0,w-94,f);
+   if(last)page.drawLine({start:{x:x+12,y:yy+13},end:{x:x+w-12,y:yy+13},thickness:.5,color:gold});
+   ls.forEach((line,j)=>draw(line,x+12,yy-j*12,9.0,f));const v=clean(euros(n));draw(v,x+w-12-f.widthOfTextAtSize(v,10),yy,10,f);yy-=Math.max(19,ls.length*12+7);
+  });return h;
  }
- function payments(x,top,w){round(x,top,w,146);round(x,top,w,31,ink,7);draw('Mode de paiement',x+12,top-20,11,bold,white);
+ function payments(x,top,w,h=146){round(x,top,w,h);round(x,top,w,31,ink,7);draw('Mode de paiement',x+12,top-20,11,bold,white);
   checkbox('Espèces',m.payment==='cash',x+12,top-53,w-24);checkbox('Par carte bancaire : paiement en ligne',m.payment==='card',x+12,top-83,w-24);
-  draw('Ménage et charges compris.',x+12,top-122,8.7,font,muted);return 146;
+  draw('Ménage et charges compris.',x+12,top-h+24,8.7,font,muted);return h;
  }
  function bullet(t){const lead=13.8,ls=lines(t,9.5,C-16);ensure(ls.length*lead);draw('-',M,y,10,bold,gold);ls.forEach((l,i)=>draw(l,M+15,y-i*lead,9.5));y-=ls.length*lead;}
  add();
@@ -56,7 +59,7 @@ async function createDocument(m,type){
   if(m.registration)paragraph('Numéro d’enregistrement : '+m.registration);
   const stay=`Du ${m.arrival} à ${m.arrivalTime} au ${m.departure} à ${m.departureTime}\n${m.nights} nuits · ${m.guests} voyageurs · Capacité maximale : 2 personnes\n${[m.early?'Arrivée anticipée : + 5 €':null,m.late?'Départ tardif : + 5 €':null].filter(Boolean).join(' · ')||'Aucune option d’horaires souscrite.'}\n${arrivalTerms(m)} Le réservant doit être majeur.`;
   const sh=lines(stay,9.3,C-24).length*13+48;box('Dates et horaires',stay,M,y,C,sh);y-=sh+16;
-  ensure(155);totals(M,y,half);payments(M+half+14,y,half);y-=164;
+  const priceH=totalsHeight(half);ensure(priceH+18);totals(M,y,half);payments(M+half+14,y,half,priceH);y-=priceH+18;
   paragraph(m.paymentTerms,9.5,13);paragraph(m.intermediary,9.5,13);
   paragraph('Fiche descriptive n° '+m.number+' annexée au contrat : logement, mobilier, équipements et services.',9.5,13);
   if(m.acceptedAt)paragraph('Acceptation enregistrée : '+m.signer+' - '+new Intl.DateTimeFormat('fr-FR',{dateStyle:'short',timeStyle:'short',timeZone:'Europe/Paris'}).format(new Date(m.acceptedAt)),8,11);
@@ -89,7 +92,7 @@ async function createDocument(m,type){
   add();heading('Mobilier et équipements');
   for(const [room,content] of m.inventory){const h=lines(content,9.5,C-153).length*14+25;ensure(h+8);round(M,y,C,h);draw(room,M+12,y-21,9.5,bold);lines(content,9.5,C-153).forEach((l,i)=>draw(l,M+140,y-21-i*14,9.5));y-=h+8;}
   y-=10;heading('Services et stationnement');m.services.forEach(bullet);paragraph(m.parking,9.5,13);
-  heading('Prix du séjour et paiement');ensure(160);const half=(C-14)/2;totals(M,y,half);payments(M+half+14,y,half);y-=162;
+  heading('Prix du séjour et paiement');const half=(C-14)/2,priceH=totalsHeight(half);ensure(priceH+16);totals(M,y,half);payments(M+half+14,y,half,priceH);y-=priceH+16;
   paragraph(m.paymentTerms,9.3,13);
  }
  const pages=doc.getPages();pages.forEach((p,i)=>{p.drawLine({start:{x:M,y:44},end:{x:W-M,y:44},thickness:.5,color:gold});p.drawText('L’Étape du Berry · '+(type==='contract'?'Contrat':'Fiche descriptive')+' n° '+m.number,{x:M,y:28,size:8,font,color:muted});const n=`${i+1} / ${pages.length}`;p.drawText(n,{x:W-M-font.widthOfTextAtSize(n,8),y:28,size:8,font,color:muted});});return doc.save();

@@ -1,5 +1,5 @@
 import {depositMethod,depositSummary,bankAuthorizationMode} from './deposit-policy.mjs';
-export const CONTRACT_VERSION='2026-10-10-standard-deposit';
+export const CONTRACT_VERSION='2026-10-11-tax-detail';
 export const escapeHtml=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 export function contractReady(env){return env.CONTRACT_APPROVED==='true'&&['OWNER_NAME','OWNER_ADDRESS','OWNER_STATUS','APARTMENT_AREA','APARTMENT_ROOMS','APARTMENT_CLASSIFICATION','TOURIST_TAX_DESCRIPTION','DEPOSIT_RELEASE_TERMS','GUEST_INSURANCE_TERMS','INTERMEDIARY_TERMS'].every(key=>typeof env[key]==='string'&&env[key].trim());}
 export const euros=cents=>new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR'}).format(cents/100);
@@ -70,7 +70,11 @@ const e=escapeHtml;
 const para=t=>`<p>${e(t)}</p>`;
 const list=items=>`<ul>${items.map(t=>`<li>${e(t)}</li>`).join('')}</ul>`;
 export function renderDescription(m){return `<h1>Fiche descriptive - L’Étape du Berry</h1><p>Associée au contrat n° ${e(m.number)}</p><h2>Le logement et sa situation</h2>${para(m.address)}${para(`${m.area} m² · ${m.rooms} · ${m.classification} · 2 voyageurs maximum`)}${para(m.description)}${para(m.location)}<h2>Le loueur</h2>${para(m.owner.join('\n'))}${m.registration?para('Numéro d’enregistrement : '+m.registration):''}<h2>Mobilier et équipements</h2>${m.inventory.map(([title,t])=>`<h3>${e(title)}</h3>${para(t)}`).join('')}<h2>Services et stationnement</h2>${list(m.services)}${para(m.parking)}<h2>Prix et modalités de paiement</h2>${priceHtml(m)}${para(m.paymentTerms)}${para('Ménage et charges compris. '+(m.depositSummary||'Dépôt de garantie : 300 €, par empreinte bancaire, distinct du prix du séjour.'))}${para('Arrivée anticipée dès 14 h : 5 €. Départ tardif jusqu’à 12 h : 5 €. Sur demande et sous réserve de disponibilité.')}`;}
-function priceHtml(m){return `<table><tr><th colspan="2">Montant de votre séjour</th></tr>${[['Prix de la location',m.price.location],['Prix des options éventuelles',m.price.options],['Taxe de séjour',m.price.tax],['TOTAL',m.price.total]].map(([t,n])=>`<tr><td>${t}</td><td>${e(euros(n))}</td></tr>`).join('')}</table>`;}
+export function priceRows(m){
+ const tax=m.price.taxDetails;
+ return [['Prix de la location',m.price.location],['Prix des options éventuelles',m.price.options],...(tax?[['Taxe de séjour communale',tax.communal],[`Majoration départementale (${tax.additionalRate*100} %)`,tax.departmental]]:[['Taxe de séjour',m.price.tax]]),['TOTAL',m.price.total]];
+}
+function priceHtml(m){return `<table><tr><th colspan="2">Montant de votre séjour</th></tr>${priceRows(m).map(([t,n])=>`<tr><td>${t}</td><td>${e(euros(n))}</td></tr>`).join('')}</table>`;}
 export function arrivalTerms(m){if(m.depositMethod==='cash')return 'Arrivée autonome dès l’heure contractuelle. Rendez-vous le jour de l’arrivée à partir de 17 h 30 : remise en main propre du dépôt de 300 € en espèces, contre reçu.'+(m.payment==='cash'?' Règlement du séjour au même rendez-vous.':'')+' Restitution en main propre au départ, sur rendez-vous après contrôle du logement, en l’absence de dégradation.';return m.payment==='cash'?'Avant 17 h 30, arrivée autonome dès l’heure prévue au contrat. À partir de 17 h 30, accueil en personne possible sur rendez-vous. Pour le paiement en espèces, un rendez-vous à partir de 17 h 30 le jour de l’arrivée est obligatoire pour régler intégralement le séjour, contre reçu.':'Arrivée autonome.';}
 
 export function renderContract(stay,env){return renderContractModel(documentModel(stay,env));}
