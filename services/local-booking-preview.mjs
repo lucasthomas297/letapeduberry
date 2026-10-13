@@ -56,6 +56,7 @@ const owner=JSON.parse(readFileSync(resolve(privateDir,'reservation-owner.json')
 const secret=readFileSync(resolve(privateDir,'stripe-test-key.txt'),'utf8').trim();
 if(!secret.startsWith('sk_test_'))throw new Error('Une clé Stripe de test est requise.');
 if(!db.prepare("SELECT name FROM sqlite_master WHERE name='cash_deposits'").get())db.exec(readFileSync(new URL('./migrations/0011_cash_deposits.sql',import.meta.url),'utf8'));
+if(!db.prepare('PRAGMA table_info(stays)').all().some(column=>column.name==='payment_test'))db.exec(readFileSync(new URL('./migrations/0013_owner_payment_test.sql',import.meta.url),'utf8'));
 if(!db.prepare("SELECT name FROM sqlite_master WHERE name='queue_owner_confirmation'").get())db.exec(readFileSync(new URL('./migrations/0014_owner_confirmation.sql',import.meta.url),'utf8'));
 if(!db.prepare("SELECT name FROM sqlite_master WHERE name='booking_settings'").get())db.exec(readFileSync(new URL('./migrations/0015_booking_settings.sql',import.meta.url),'utf8'));
 const env={...owner,CONTRACT_APPROVED:'true',INTERMEDIARY_TERMS:'Réservation directe sans intermédiaire — simulation locale',REQUESTS_ENABLED:'true',
