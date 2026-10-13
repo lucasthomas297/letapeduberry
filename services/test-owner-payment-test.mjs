@@ -34,7 +34,7 @@ test('private opt-in only allows a pending owner card request and freezes its mo
  const request=(id,headers={})=>new Request('https://example.test/api/admin/payment-test',{method:'POST',headers:{Origin:'https://example.test','Content-Type':'application/json',...headers},body:JSON.stringify({id,confirmed:true})});
  try{
   assert.equal((await flowFetch(request('owner'),env)).status,403);
-  const auth={'Cf-Access-Jwt-Assertion':token};assert.equal((await flowFetch(request('guest',auth),env)).status,409);
+  const auth={'Cf-Access-Jwt-Assertion':token};const setting=value=>new Request('https://example.test/api/admin/settings',{method:'POST',headers:{Origin:'https://example.test','Content-Type':'application/json',...auth},body:JSON.stringify({min_nights:value})});assert.equal((await flowFetch(setting(2.5),env)).status,400);assert.equal((await flowFetch(setting(61),env)).status,400);assert.equal((await flowFetch(setting(3),env)).status,200);assert.equal(db.prepare('SELECT min_nights FROM booking_settings').get().min_nights,3);assert.throws(()=>add('too-short'),/minimum de nuits/);assert.equal((await flowFetch(setting(1),env)).status,200);assert.equal((await flowFetch(request('guest',auth),env)).status,409);
   assert.equal((await flowFetch(request('owner',{...auth,Origin:'https://evil.test'}),env)).status,403);
   assert.equal((await flowFetch(request('owner',auth),{...env,STRIPE_TEST_SECRET_KEY:''})).status,503);
   assert.equal((await flowFetch(request('owner',auth),env)).status,200);

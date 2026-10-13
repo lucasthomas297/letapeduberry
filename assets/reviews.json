@@ -1,0 +1,186 @@
+{
+  "checked_at": "2026-10-13",
+  "source": "https://www.airbnb.fr/rooms/1616590647208175191",
+  "reviews": [
+    {
+      "author": "Lorenzo",
+      "rating": 5,
+      "source_id": "1487531380454039533",
+      "text": "Le logement est parfait et propre. Lucas répond rapidement a vos questions. […]",
+      "excerpt": true,
+      "date": "2026-10",
+      "lang": "fr",
+      "original_date_label": "Il y a 1 semaine"
+    },
+    {
+      "author": "Frédérique",
+      "rating": 5,
+      "source_id": "1486018566471258469",
+      "text": "Logement très bien situé pour visiter Bourges à pieds et arriver en […]",
+      "excerpt": true,
+      "date": "2026-09",
+      "lang": "fr",
+      "original_date_label": "Il y a 3 semaines"
+    },
+    {
+      "author": "Franc Gervais",
+      "rating": 5,
+      "source_id": "1478874633650667477",
+      "text": "Le logement était vraiment parfait : très propre, lumineux, spacieux et idéalement […]",
+      "excerpt": true,
+      "date": "2026-09",
+      "lang": "fr",
+      "original_date_label": "septembre 2026"
+    },
+    {
+      "author": "Mélanie",
+      "rating": 5,
+      "source_id": "1484455553496844987",
+      "text": "[…] Le logement est idéalement situé et des places de parking sont accessibles à proximité. Le logement était très propre et aménagé avec goût. Je recommande fortement",
+      "excerpt": true,
+      "date": "2026-09",
+      "lang": "fr",
+      "original_date_label": "septembre 2026"
+    },
+    {
+      "author": "Fievet",
+      "rating": 5,
+      "source_id": "1475327261254214323",
+      "text": "Appartement confortable propre et face gare très pratique. Rue avec restaurant non […]",
+      "excerpt": true,
+      "date": "2026-06",
+      "lang": "fr",
+      "original_date_label": "juin 2026"
+    },
+    {
+      "author": "Aurore",
+      "rating": 5,
+      "source_id": "1486012421164437561",
+      "text": "Très bien, le logement est facile d'accès et proche à la fois […]",
+      "excerpt": true,
+      "date": "2026-06",
+      "lang": "fr",
+      "original_date_label": "juin 2026"
+    },
+    {
+      "author": "Said",
+      "rating": 5,
+      "source_id": "1502143799279949516",
+      "text": "Merci à Lucas pour son accueil. En déplacement professionnel, son logement correspondait […]",
+      "excerpt": true,
+      "date": "2026-06",
+      "lang": "fr",
+      "original_date_label": "juin 2026"
+    },
+    {
+      "author": "Isabelle",
+      "rating": 5,
+      "source_id": "1487657560783429339",
+      "text": "J’ai passé 3 nuits dans ce logement et j’ai beaucoup apprécié sa qualité, sa propreté et son confort. Face à la gare et proche du centre ville il est très facile d’accès. Entièrement refait à neuf, le mobilier est de qualité et confortable. […] Je recommande donc ce logement sans hésitation.",
+      "excerpt": true,
+      "date": "2026-05",
+      "lang": "fr",
+      "original_date_label": "mai 2026"
+    },
+    {
+      "author": "Sylvain",
+      "rating": 5,
+      "source_id": "1472954646349677533",
+      "text": "Appartement conforme à la description, Lucas est très sympathique. Je recommande vraiment […]",
+      "excerpt": true,
+      "date": "2026-05",
+      "lang": "fr",
+      "original_date_label": "mai 2026"
+    },
+    {
+      "author": "Laetitia",
+      "rating": 5,
+      "source_id": "1479692574017142235",
+      "text": "Hôte réactif , logement correspondant à la description",
+      "excerpt": false,
+      "date": "2026-04",
+      "lang": "fr",
+      "original_date_label": "avril 2026"
+    },
+    {
+      "author": "Thomas",
+      "rating": 5,
+      "source_id": "1488009787603419625",
+      "text": "Nous avons passé un très bon séjour dans cet appartement !",
+      "excerpt": false,
+      "date": "2026-04",
+      "lang": "fr",
+      "original_date_label": "avril 2026"
+    },
+    {
+      "author": "Sylvie",
+      "rating": 5,
+      "source_id": "1572366874498896635",
+      "text": "bien dromri",
+      "excerpt": false,
+      "date": "2026-04",
+      "lang": "fr",
+      "original_date_label": "avril 2026"
+    },
+    {
+      "author": "Flore",
+      "rating": 5,
+      "source_id": "1602813484704130390",
+      "text": "Nous avons passé un très bon petit séjour à Bourges merci pour […]",
+      "excerpt": true,
+      "date": "2026-04",
+      "lang": "fr",
+      "original_date_label": "avril 2026"
+    },
+    {
+      "author": "Nolann",
+      "rating": 5,
+      "source_id": "1649859642972499100",
+      "text": "Super séjour ! L'appartement est propre, bien situé!Je recommande !",
+      "excerpt": false,
+      "date": "2026-03",
+      "lang": "fr",
+      "original_date_label": "mars 2026"
+    },
+    {
+      "author": "Anthony",
+      "rating": 5,
+      "source_id": "1494698653051666206",
+      "text": "Logement très propre, bien équipé et idéalement situé. Lucas est un hôte […]",
+      "excerpt": true,
+      "date": "2026-03",
+      "lang": "fr",
+      "original_date_label": "mars 2026"
+    },
+    {
+      "author": "Léane",
+      "rating": 5,
+      "source_id": "1488611229120209477",
+      "text": "Très bon logement , je voyage pour le travail et des logements si bien entretenu proche d’une gare c’est pas si évident à trouver . Je recommande .",
+      "excerpt": false,
+      "date": "2026-03",
+      "lang": "fr",
+      "original_date_label": "mars 2026"
+    },
+    {
+      "author": "Simon",
+      "rating": 5,
+      "source_id": "1502403530953432768",
+      "text": "Je remercie Lucas qui m'a accueilli dans un logement en parfait état […]",
+      "excerpt": true,
+      "date": "2026-02",
+      "lang": "fr",
+      "original_date_label": "février 2026"
+    },
+    {
+      "author": "Aymard",
+      "rating": 5,
+      "source_id": "1497580665516587342",
+      "text": "peaceful place. very clean. […] bakery in around the corner on the same block. City center is walking distance from the apartment. I absolutely do recommend to anyone to book this place. I will definitely go back there.",
+      "excerpt": true,
+      "date": "2026-02",
+      "lang": "en",
+      "original_date_label": "février 2026"
+    }
+  ]
+}

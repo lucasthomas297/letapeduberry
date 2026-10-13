@@ -1,3 +1,4 @@
+import {bookingSettings,saveBookingSettings} from './booking-settings.mjs';
 import {depositMethod,depositSummary,bankAuthorizationMode} from './deposit-policy.mjs';
 import {cashDepositAction} from './cash-deposit.mjs';
 import {depositDeadline} from './deposit-deadline.mjs';
@@ -38,6 +39,12 @@ export async function flowFetch(request,env) {
  const url=new URL(request.url),path=url.pathname;
  if(path.startsWith('/api/admin/')) {
   if(!await adminAuthorized(request,env))return json(403,{error:'Connexion privée requise.'});
+  if(path==='/api/admin/settings'){
+   if(request.method==='GET')return json(200,await bookingSettings(env));
+   if(request.method!=='POST')return json(405,{error:'Méthode interdite'});
+   if(!originOK(request))return json(403,{error:'Origine interdite'});
+   try{return json(200,await saveBookingSettings(env,await smallJson(request)));}catch(error){return json(400,{error:error.message});}
+  }
   if(path==='/api/admin/mail-test') {
    if(request.method==='GET')return deliveryTestPage();
    if(request.method!=='POST')return json(405,{error:'Méthode interdite'});

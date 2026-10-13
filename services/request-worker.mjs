@@ -135,7 +135,9 @@ export default {
    if(existing)return existing.payload_hash===hash?json(200,{reference:existing.id.slice(0,8)}):json(409,{error:'La demande a changé. Veuillez recommencer.'});
    const calendar=await availability.fetch(new Request(url.origin+'/api/availability'),env);
    if(!calendar.ok)return calendar;
-   if(overlaps(details.arrival,details.departure,(await calendar.json()).busy))return json(409,{error:'Ces dates ne sont plus disponibles.'});
+   const availabilityData=await calendar.json();
+   if(details.nights<(availabilityData.min_nights??1))return json(400,{error:`Le séjour doit comprendre au moins ${availabilityData.min_nights} nuits.`});
+   if(overlaps(details.arrival,details.departure,availabilityData.busy))return json(409,{error:'Ces dates ne sont plus disponibles.'});
    const id=crypto.randomUUID(),timestamp=new Date().toISOString();
    await env.BERRY_DB.batch([
     env.BERRY_DB.prepare(`INSERT INTO stays(id,request_key,payload_hash,arrival,departure,customer_name,customer_email,customer_phone,guests,rate,early_arrival,late_departure,total_cents,payment_preference,rules_version,rules_accepted_at,created_at,comment,customer_address,insurance_accepted_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).bind(id,key,hash,details.arrival,details.departure,details.name,details.email,details.phone,details.guests,details.rate,Number(details.early),Number(details.late),details.totalCents,details.payment,details.rulesVersion,timestamp,timestamp,details.comment,details.address,timestamp),

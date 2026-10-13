@@ -279,3 +279,10 @@ async function cashDeposit(stay,action){
  save.onclick=async()=>{save.disabled=true;try{await adminPost('cash-deposit',{id:stay.id,action,received:action==='receive'&&check.checked,amountCents:30000,returned:action==='return'&&check.checked,inspected:action==='return'&&check.checked,returnedCents:amount?Math.round(Number(amount.value)*100):undefined,reason:reason?.value});dialog.close();await load();}catch(error){message.textContent=error.message;save.disabled=!check.checked;}};
  dialog.addEventListener('close',()=>dialog.remove());document.body.append(dialog);dialog.showModal();
 }
+
+async function loadSettings(){
+ const panel=document.querySelector('#booking-settings'),form=panel.querySelector('form'),input=form.elements.min_nights,message=panel.querySelector('[role="status"]');
+ try{const response=await fetch('/api/admin/settings',{cache:'no-store'});if(!response.ok)throw Error();const data=await response.json();input.value=data.min_nights;form.querySelector('button').disabled=false;}catch{message.textContent='Réglage indisponible. Reconnectez-vous ou actualisez la page.';return;}
+ form.onsubmit=async event=>{event.preventDefault();const button=form.querySelector('button');button.disabled=true;message.textContent='Enregistrement…';try{const data=await adminPost('settings',{min_nights:Number(input.value)});input.value=data.min_nights;message.textContent=`Minimum enregistré : ${data.min_nights} nuit${data.min_nights>1?'s':''}.`;}catch(error){message.textContent=error.message;}finally{button.disabled=false;}};
+}
+if(!preview)loadSettings();
