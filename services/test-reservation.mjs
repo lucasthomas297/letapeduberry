@@ -238,7 +238,7 @@ test('real SQL schema: consent required, payment session unique, email queue ato
 test('request persisted once with both notifications even when mail service fails',async()=>{
  const db=new DatabaseSync(':memory:');db.exec('PRAGMA foreign_keys=ON');
  db.exec(readFileSync(new URL('./migrations/0001_stays.sql',import.meta.url),'utf8'));db.exec(readFileSync(new URL('./migrations/0002_booking_flow.sql',import.meta.url),'utf8'));db.exec(readFileSync(new URL('./migrations/0003_insurance_consent.sql',import.meta.url),'utf8'));
- db.exec(readFileSync(new URL('./migrations/0015_booking_settings.sql',import.meta.url),'utf8'));
+ db.exec(readFileSync(new URL('./migrations/0015_booking_settings.sql',import.meta.url),'utf8'));db.exec(readFileSync(new URL('./migrations/0016_dated_minimum_stays.sql',import.meta.url),'utf8'));
  function prepare(sql,args=[]) {
   return {bind:(...values)=>prepare(sql,values),first:async()=>db.prepare(sql).get(...args)??null,
    all:async()=>({success:true,results:db.prepare(sql).all(...args)}),
@@ -362,7 +362,7 @@ test('contract freezes descriptive annex and never prechecks a missing acceptanc
 test('cash stay: owner approval, guest consent, no Stripe payment, one audited receipt',async()=>{
  const db=new DatabaseSync(':memory:');db.exec('PRAGMA foreign_keys=ON');
  for(const name of ['0001_stays.sql','0002_booking_flow.sql','0003_insurance_consent.sql','0004_cash_receipts.sql'])db.exec(readFileSync(new URL('./migrations/'+name,import.meta.url),'utf8'));
- db.exec(readFileSync(new URL('./migrations/0015_booking_settings.sql',import.meta.url),'utf8'));
+ db.exec(readFileSync(new URL('./migrations/0015_booking_settings.sql',import.meta.url),'utf8'));db.exec(readFileSync(new URL('./migrations/0016_dated_minimum_stays.sql',import.meta.url),'utf8'));
  function prepare(sql,args=[]){return {bind:(...values)=>prepare(sql,values),first:async()=>db.prepare(sql).get(...args)??null,all:async()=>({success:true,results:db.prepare(sql).all(...args)}),run:async()=>({success:true,meta:db.prepare(sql).run(...args)})};}
  const time=new Date().toISOString();
  db.prepare(`INSERT INTO stays(id,request_key,payload_hash,arrival,departure,customer_name,customer_email,customer_phone,guests,rate,early_arrival,late_departure,total_cents,payment_preference,rules_version,rules_accepted_at,created_at,insurance_accepted_at) VALUES ('cash','key','hash','2026-11-13','2026-11-15','Voyageur','guest@example.test','0600000000',2,'flex',1,1,17800,'cash','v',?,?,?)`).run(time,time,time);

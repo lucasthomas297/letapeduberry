@@ -1,3 +1,4 @@
+import {minimumForArrival} from './booking-settings.mjs';
 import {depositMethod,depositSummary} from './deposit-policy.mjs';
 import {mailDate,guestMailText} from './mail-format.mjs';
 import {stripeConfigured} from './payment.mjs';
@@ -136,7 +137,8 @@ export default {
    const calendar=await availability.fetch(new Request(url.origin+'/api/availability'),env);
    if(!calendar.ok)return calendar;
    const availabilityData=await calendar.json();
-   if(details.nights<(availabilityData.min_nights??1))return json(400,{error:`Le séjour doit comprendre au moins ${availabilityData.min_nights} nuits.`});
+   const requiredNights=minimumForArrival(availabilityData,details.arrival);
+   if(details.nights<requiredNights)return json(400,{error:`Pour cette date d’arrivée, le séjour doit comprendre au moins ${requiredNights} nuits.`});
    if(overlaps(details.arrival,details.departure,availabilityData.busy))return json(409,{error:'Ces dates ne sont plus disponibles.'});
    const id=crypto.randomUUID(),timestamp=new Date().toISOString();
    await env.BERRY_DB.batch([

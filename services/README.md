@@ -34,3 +34,7 @@ Contrôles : `node --test services/test-*.mjs`, dont le parcours test Checkout �
 ## Minimum de nuits
 
 Le propriétaire règle le minimum global de 1 à 60 nuits dans /gestion, panneau « Réglages des réservations ». GET/POST /api/admin/settings est protégé par Access ; les écritures exigent la même origine. D1 conserve le réglage et son auteur, avec 1 nuit initialement. /api/availability expose min_nights. Le calendrier et le serveur refusent les nouvelles demandes trop courtes ; un déclencheur SQL protège aussi une modification concurrente du réglage. Les dossiers déjà reçus ne changent pas. Ce réglage ne modifie pas Airbnb ni Booking.
+
+## Minimum de nuits par date d’arrivée
+
+Le calendrier de /gestion permet de sélectionner une ou plusieurs dates précises dans les douze prochains mois. Une règle particulière remplace le minimum général pour une arrivée ce jour-là uniquement ; elle ne se répète pas chaque semaine et ne concerne pas un séjour commencé un autre jour. Le bouton « Utiliser le minimum général » retire la règle des seules dates sélectionnées. D1 conserve les règles, leur date de modification et leur auteur ; les écritures sont atomiques. /api/availability expose min_nights_by_date pour le calendrier des voyageurs. Le serveur et le déclencheur SQL refusent les nouvelles demandes trop courtes même si le formulaire est contourné. Les dossiers existants restent inchangés. Les règles Airbnb et Booking sont indépendantes.

@@ -1,3 +1,4 @@
+import {initializeBookingSettings} from './booking-settings.js';
 import {isArchivedStay} from './gestion-categories.js';
 const list=document.querySelector('#stays'),status=document.querySelector('#admin-status');
 const currentTab=document.querySelector('#tab-current'),archiveTab=document.querySelector('#tab-archives');
@@ -280,9 +281,4 @@ async function cashDeposit(stay,action){
  dialog.addEventListener('close',()=>dialog.remove());document.body.append(dialog);dialog.showModal();
 }
 
-async function loadSettings(){
- const panel=document.querySelector('#booking-settings'),form=panel.querySelector('form'),input=form.elements.min_nights,message=panel.querySelector('[role="status"]');
- try{const response=await fetch('/api/admin/settings',{cache:'no-store'});if(!response.ok)throw Error();const data=await response.json();input.value=data.min_nights;form.querySelector('button').disabled=false;}catch{message.textContent='Réglage indisponible. Reconnectez-vous ou actualisez la page.';return;}
- form.onsubmit=async event=>{event.preventDefault();const button=form.querySelector('button');button.disabled=true;message.textContent='Enregistrement…';try{const data=await adminPost('settings',{min_nights:Number(input.value)});input.value=data.min_nights;message.textContent=`Minimum enregistré : ${data.min_nights} nuit${data.min_nights>1?'s':''}.`;}catch(error){message.textContent=error.message;}finally{button.disabled=false;}};
-}
-if(!preview)loadSettings();
+initializeBookingSettings({preview,adminPost});
