@@ -12,7 +12,7 @@ Docs : https://resend.com/docs/api-reference/emails/send-email et https://develo
 
 # Avis
 
-Les avis vérifiés cinq étoiles sont conservés dans `assets/reviews.json` et rendus dans `index.html` par `tools/render_reviews.py`, pour fonctionner aussi sans JavaScript. Le carrousel permet boutons, flèches du clavier et glissement tactile, sans défilement imposé. Aucune moyenne globale n'est calculée à partir de cette sélection cinq étoiles.
+Les avis vérifiés cinq étoiles sont conservés dans `assets/reviews.json` et rendus dans `index.html` par `tools/render_reviews.py`, pour fonctionner aussi sans JavaScript. Le carrousel permet boutons, flèches du clavier et glissement tactile, sans défilement imposé. Aucune moyenne globale n'est calculée à partir de cette sélection cinq étoiles. Le propriétaire souhaite garder les visiteurs sur son site : ne pas réintroduire de lien sortant vers les avis Airbnb dans le carrousel.
 
 Une vérification hebdomadaire est programmée dans ce chat Codex chaque lundi à 9 h (Europe/Paris), sous le nom « Avis Airbnb — L’Étape du Berry ». Elle utilise la page publique et les notes individuelles visibles, conserve les textes originaux ou extraits explicitement coupés, déduplique par source_id et publie uniquement les changements d’avis. Aucun robot de récupération ne tourne dans le Worker. Le fonctionnement dépend de la disponibilité de Codex et du navigateur ; en cas de blocage Airbnb, garder les avis existants et avertir le propriétaire. Première vérification le 13 octobre 2026 : 18 avis cinq étoiles sur 20 avis visibles.
 

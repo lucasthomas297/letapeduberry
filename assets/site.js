@@ -155,9 +155,25 @@ if(dialog){
  dialog.querySelector('#lightbox-prev').addEventListener('click',()=>showPhoto(currentIndex-1));
  dialog.querySelector('#lightbox-next').addEventListener('click',()=>showPhoto(currentIndex+1));
  dialog.addEventListener('keydown',event=>{if(event.key==='ArrowLeft'||event.key==='ArrowRight'){event.preventDefault();showPhoto(currentIndex+(event.key==='ArrowRight'?1:-1))}});
+ const stage=dialog.querySelector('#lightbox-stage'),pointers=new Set();let gesture=null;
+ stage.addEventListener('pointerdown',event=>{
+  if(event.target.closest('button')||(event.pointerType==='mouse'&&event.button!==0))return;
+  pointers.add(event.pointerId);
+  if(pointers.size!==1){gesture=null;return;}
+  gesture={id:event.pointerId,x:event.clientX,y:event.clientY};
+  stage.setPointerCapture(event.pointerId);
+ });
+ stage.addEventListener('pointerup',event=>{
+  const started=gesture;pointers.delete(event.pointerId);gesture=null;
+  if(!started||started.id!==event.pointerId)return;
+  const dx=event.clientX-started.x,dy=event.clientY-started.y;
+  if(Math.abs(dx)>=50&&Math.abs(dx)>Math.abs(dy)*1.3)showPhoto(currentIndex+(dx<0?1:-1));
+ });
+ stage.addEventListener('pointercancel',event=>{pointers.delete(event.pointerId);gesture=null;});
+ large.addEventListener('dragstart',event=>event.preventDefault());
  dialog.querySelector('.close').addEventListener('click',()=>dialog.close());
  dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.close()});
- dialog.addEventListener('close',()=>{document.body.style.overflow='';opener?.focus()});
+ dialog.addEventListener('close',()=>{gesture=null;pointers.clear();document.body.style.overflow='';opener?.focus()});
 }
 
 
