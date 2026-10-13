@@ -148,33 +148,53 @@ if(form){
 }
 const dialog=document.querySelector('#lightbox');
 if(dialog){
- const large=document.querySelector('#lightbox-image'),caption=document.querySelector('#lightbox-caption');
- const photos=Array.from(document.querySelectorAll('.photo-open'));
- let opener,currentIndex=0;
- const showPhoto=index=>{currentIndex=(index+photos.length)%photos.length;const img=photos[currentIndex].querySelector('img');large.src=img.src;large.alt=img.alt;caption.textContent=img.alt};
- photos.forEach((button,index)=>button.addEventListener('click',()=>{opener=button;showPhoto(index);dialog.showModal();document.body.style.overflow='hidden'}));
- dialog.querySelector('#lightbox-prev').addEventListener('click',()=>showPhoto(currentIndex-1));
- dialog.querySelector('#lightbox-next').addEventListener('click',()=>showPhoto(currentIndex+1));
- dialog.addEventListener('keydown',event=>{if(event.key==='ArrowLeft'||event.key==='ArrowRight'){event.preventDefault();showPhoto(currentIndex+(event.key==='ArrowRight'?1:-1))}});
- const stage=dialog.querySelector('#lightbox-stage'),pointers=new Set();let gesture=null;
+ const large=document.querySelector('#lightbox-image'),caption=document.querySelector('#lightbox-caption'),stage=dialog.querySelector('#lightbox-stage');
+ const photos=Array.from(document.querySelectorAll('.photo-open')),pointers=new Set(),reduced=matchMedia('(prefers-reduced-motion: reduce)');
+ const viewport=document.createElement('div');viewport.className='lightbox-viewport';
+ const slides=[-1,0,1].map(offset=>{const frame=document.createElement('div');frame.className='lightbox-slide';const image=offset===0?large:document.createElement('img');image.draggable=false;if(offset!==0){frame.setAttribute('aria-hidden','true');image.alt='';}frame.append(image);viewport.append(frame);return {frame,image,offset};});
+ stage.insertBefore(viewport,stage.querySelector('#lightbox-next'));
+ let opener,currentIndex=0,gesture=null,animating=false,finishTimer;
+ const indexOf=index=>(index+photos.length)%photos.length;
+ const width=()=>viewport.getBoundingClientRect().width;
+ function position(displacement,duration=0){const size=width();for(const slide of slides){slide.frame.style.transition=duration?`transform ${duration}ms cubic-bezier(.2,.75,.25,1)`:'none';slide.frame.style.transform=`translate3d(${slide.offset*size+displacement}px,0,0)`;}}
+ function placeCaption(){if(dialog.open)caption.style.top=(large.getBoundingClientRect().bottom-dialog.getBoundingClientRect().top+12)+'px';}
+ large.addEventListener('load',placeCaption);
+ function showPhoto(index){clearTimeout(finishTimer);animating=false;gesture=null;currentIndex=indexOf(index);for(const slide of slides){const image=photos[indexOf(currentIndex+slide.offset)].querySelector('img');slide.image.src=image.src;if(slide.offset===0)slide.image.alt=image.alt;}caption.textContent=large.alt;position(0);requestAnimationFrame(placeCaption);}
+ function settle(step=0){
+  gesture=null;animating=true;const duration=reduced.matches?0:260;
+  const finish=()=>{if(step)showPhoto(currentIndex+step);else{animating=false;position(0);}};
+  position(-step*width(),duration);
+  if(duration)finishTimer=setTimeout(finish,duration+20);else finish();
+ }
+ function navigate(step){if(animating)return;settle(step);}
+ photos.forEach((button,index)=>button.addEventListener('click',()=>{opener=button;dialog.showModal();showPhoto(index);document.body.style.overflow='hidden';}));
+ dialog.querySelector('#lightbox-prev').addEventListener('click',()=>navigate(-1));
+ dialog.querySelector('#lightbox-next').addEventListener('click',()=>navigate(1));
+ dialog.addEventListener('keydown',event=>{if(event.key==='ArrowLeft'||event.key==='ArrowRight'){event.preventDefault();navigate(event.key==='ArrowRight'?1:-1);}});
  stage.addEventListener('pointerdown',event=>{
-  if(event.target.closest('button')||(event.pointerType==='mouse'&&event.button!==0))return;
-  pointers.add(event.pointerId);
-  if(pointers.size!==1){gesture=null;return;}
-  gesture={id:event.pointerId,x:event.clientX,y:event.clientY};
-  stage.setPointerCapture(event.pointerId);
+  if(event.target.closest('button')||(event.pointerType==='mouse'&&event.button!==0)||animating)return;
+  pointers.add(event.pointerId);if(pointers.size!==1){gesture=null;position(0);return;}
+  gesture={id:event.pointerId,x:event.clientX,y:event.clientY,start:performance.now(),mode:'pending'};stage.setPointerCapture(event.pointerId);
+ });
+ stage.addEventListener('pointermove',event=>{
+  if(!gesture||gesture.id!==event.pointerId)return;
+  const dx=event.clientX-gesture.x,dy=event.clientY-gesture.y;
+  if(gesture.mode==='pending'&&Math.max(Math.abs(dx),Math.abs(dy))>8)gesture.mode=Math.abs(dx)>Math.abs(dy)*1.2?'horizontal':'vertical';
+  if(gesture.mode==='horizontal')position(Math.max(-width(),Math.min(width(),dx)));
  });
  stage.addEventListener('pointerup',event=>{
-  const started=gesture;pointers.delete(event.pointerId);gesture=null;
-  if(!started||started.id!==event.pointerId)return;
-  const dx=event.clientX-started.x,dy=event.clientY-started.y;
-  if(Math.abs(dx)>=50&&Math.abs(dx)>Math.abs(dy)*1.3)showPhoto(currentIndex+(dx<0?1:-1));
+  const started=gesture;pointers.delete(event.pointerId);if(!started||started.id!==event.pointerId)return;
+  const dx=event.clientX-started.x,dy=event.clientY-started.y,velocity=Math.abs(dx)/Math.max(1,performance.now()-started.start);
+  const horizontal=started.mode==='horizontal'&&Math.abs(dx)>Math.abs(dy)*1.2;
+  const enough=Math.abs(dx)>=Math.max(50,width()*.18)||(Math.abs(dx)>25&&velocity>.5);
+  settle(horizontal&&enough?(dx<0?1:-1):0);
  });
- stage.addEventListener('pointercancel',event=>{pointers.delete(event.pointerId);gesture=null;});
- large.addEventListener('dragstart',event=>event.preventDefault());
+ stage.addEventListener('pointercancel',event=>{pointers.delete(event.pointerId);if(gesture?.id===event.pointerId)settle(0);});
+ viewport.addEventListener('dragstart',event=>event.preventDefault());
+ window.addEventListener('resize',()=>{if(dialog.open){pointers.clear();showPhoto(currentIndex);}});
  dialog.querySelector('.close').addEventListener('click',()=>dialog.close());
- dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.close()});
- dialog.addEventListener('close',()=>{gesture=null;pointers.clear();document.body.style.overflow='';opener?.focus()});
+ dialog.addEventListener('click',event=>{if(event.target===dialog)dialog.close();});
+ dialog.addEventListener('close',()=>{clearTimeout(finishTimer);animating=false;gesture=null;pointers.clear();document.body.style.overflow='';opener?.focus();});
 }
 
 

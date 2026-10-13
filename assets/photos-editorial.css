@@ -1,0 +1,31 @@
+/* Proposition locale : une visite en chapitres plutôt qu'une grille uniforme. */
+.photos-editorial .photo-story{counter-reset:story-photo}
+.photos-editorial .photo-chapter{margin:0 0 58px}
+.photos-editorial .photo-chapter h3{display:flex;align-items:center;gap:18px;margin:0 0 22px;color:var(--muted);font:13px/1.5 Arial,sans-serif;letter-spacing:.12em;text-transform:uppercase}
+.photos-editorial .photo-chapter h3:after{content:'';height:1px;flex:1;background:linear-gradient(90deg,#d1ad7640,transparent)}
+.photos-editorial .photo-cluster{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);grid-template-rows:auto auto;gap:24px 30px}
+.photos-editorial .photo-cluster figure{min-width:0;min-height:0;margin:0;counter-increment:story-photo}
+.photos-editorial .photo-cluster .photo-feature{grid-column:1;grid-row:1/3;display:flex;flex-direction:column}
+.photos-editorial .photo-cluster .photo-support{grid-column:2}
+.photos-editorial .photo-cluster .photo-open{position:relative;height:auto;aspect-ratio:4/3;border:1px solid #e1c69530;border-radius:28px 12px 28px 12px;box-shadow:0 12px 26px #0005;background:var(--panel)}
+.photos-editorial .photo-cluster .photo-open img{height:100%;object-fit:cover;display:block}
+.photos-editorial .photo-cluster .photo-feature .photo-open{flex:1;min-height:0;aspect-ratio:auto;border-radius:32px 14px 32px 14px}
+.photos-editorial .photo-feature .photo-open img{position:absolute;inset:0;width:100%;height:100%}
+.photos-editorial .photo-cluster figcaption{display:flex;align-items:center;gap:12px;margin:12px 4px 0;font:13px/1.5 Arial,sans-serif;color:var(--muted)}
+.photos-editorial .photo-cluster figcaption:before{content:counter(story-photo,decimal-leading-zero);font-size:10px;letter-spacing:.1em;color:var(--gold)}
+.photos-editorial .photo-cluster-reverse{grid-template-columns:minmax(0,1fr) minmax(0,1.6fr)}
+.photos-editorial .photo-cluster-reverse .photo-feature{grid-column:2}
+.photos-editorial .photo-cluster-reverse .photo-support{grid-column:1}
+.photos-editorial .photo-cluster-portrait{grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr)}
+.photos-editorial .discoveries .photo-grid.photo-mosaic{grid-template-columns:minmax(0,1.25fr) minmax(0,1fr) minmax(0,1fr);gap:24px}
+.photos-editorial .discoveries .photo-open{border-radius:28px 12px 28px 12px;box-shadow:0 12px 24px #0004}
+@media(max-width:1000px){.photos-editorial .photo-cluster{gap:22px}.photos-editorial .photo-chapter{margin-bottom:44px}.photos-editorial .discoveries .photo-grid.photo-mosaic{grid-template-columns:1fr}}
+@media(max-width:760px){
+ .photos-editorial .photo-chapter h3{font-size:11px;letter-spacing:.1em;gap:12px}
+ .photos-editorial .photo-cluster,.photos-editorial .photo-cluster-reverse,.photos-editorial .photo-cluster-portrait{grid-template-columns:1fr;grid-template-rows:auto;gap:24px}
+ .photos-editorial .photo-cluster .photo-feature,.photos-editorial .photo-cluster .photo-support{grid-column:1;grid-row:auto}
+ .photos-editorial .photo-cluster .photo-feature .photo-open{flex:none;aspect-ratio:4/3}
+ .photos-editorial .photo-cluster-portrait .photo-feature .photo-open{aspect-ratio:4/5}
+ .photos-editorial .photo-cluster .photo-support .photo-open{aspect-ratio:3/2}
+ .photos-editorial .photo-cluster figcaption{font-size:13px}
+}

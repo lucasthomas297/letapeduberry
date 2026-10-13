@@ -544,3 +544,12 @@ p{margin:18px 0;color:var(--muted)}
 .booking .request-panel .request-consent{font:15px/1.6 Arial,sans-serif;letter-spacing:normal;text-transform:none;align-items:flex-start}
 
 .booking .request-panel .request-consent input[type=checkbox]{box-sizing:border-box;width:18px!important;height:18px;min-height:18px;flex:0 0 18px;align-self:flex-start;margin:3px 0 0!important;padding:0!important}
+
+/* Le geste déplace les trois vues; une zone stable évite un saut de taille entre photos. */
+.lightbox-viewport{position:relative;overflow:hidden;width:min(90vw,1400px);height:calc(100vh - 150px);height:calc(100svh - 150px);max-height:900px;flex:none}
+.lightbox-slide{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;will-change:transform}
+.lightbox-slide img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;pointer-events:none}
+@media(max-width:760px){.lightbox-viewport{width:calc(100vw - 24px);height:calc(100vh - 140px);height:calc(100svh - 140px)}}
+
+.lightbox[open]{padding-bottom:64px}
+.lightbox p{position:absolute;left:0;right:0;max-width:none;margin:0;padding:0 8px;text-align:center;pointer-events:none}
