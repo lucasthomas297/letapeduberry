@@ -30,10 +30,14 @@
     document.addEventListener('click', event => { if (!header.contains(event.target)) close(); });
   }
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
-  const native = CSS.supports('view-transition-name', 'page') && 'onpagereveal' in window;
+  const mobile = matchMedia('(max-width:760px), (pointer:coarse)');
+  document.addEventListener('pointerdown', () => {
+    if (mobile.matches) document.documentElement.classList.add('page-interacting');
+  }, {passive:true});
+  const native = !mobile.matches && CSS.supports('view-transition-name', 'page') && 'onpagereveal' in window;
   if (!native && !reduced.matches) document.documentElement.classList.add('page-transition-fallback');
   let leaving = false;
-  const reset = () => { leaving = false; document.documentElement.classList.remove('page-leaving'); };
+  const reset = () => { leaving = false; document.documentElement.classList.remove('page-leaving', 'page-interacting'); };
   window.addEventListener('pageshow', reset);
   document.addEventListener('click', event => {
     if (reduced.matches || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;

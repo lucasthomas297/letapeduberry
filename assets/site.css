@@ -553,3 +553,16 @@ p{margin:18px 0;color:var(--muted)}
 
 .lightbox[open]{padding-bottom:64px}
 .lightbox p{position:absolute;left:0;right:0;max-width:none;margin:0;padding:0 8px;text-align:center;pointer-events:none}
+
+/* Sur téléphone, la transition ne doit pas capturer toute la page pendant le défilement. */
+@media(max-width:760px),(pointer:coarse){
+ @view-transition{navigation:none}
+ .nav{view-transition-name:none}
+ .page-transition-fallback main,
+ .page-transition-fallback .apartment-depth .apartment-hero-copy,
+ .page-transition-fallback .apartment-depth>section:not(.apartment-hero){animation:none;filter:none;transform:none}
+ .page-transition-fallback main h1{animation:berry-mobile-focus .32s ease-out both}
+ .page-interacting main h1{animation:none;filter:none}
+}
+@keyframes berry-mobile-focus{from{filter:blur(3px)}to{filter:none}}
+@media(prefers-reduced-motion:reduce){.page-transition-fallback main h1{animation:none;filter:none}}
