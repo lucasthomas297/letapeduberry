@@ -494,9 +494,9 @@ p{margin:18px 0;color:var(--muted)}
 .mobile-menu-toggle{display:none}
 @media(max-width:760px){
 .nav{padding:18px 20px;gap:14px;align-items:center}.brand{font-size:18px}.brand span{font-size:6.5px;letter-spacing:.12em}
-.mobile-nav-ready .mobile-menu-toggle{display:flex;align-items:center;justify-content:center;gap:7px;min-height:44px;margin-left:auto;padding:8px 11px;background:#263028;border:1px solid #d1ad7644;border-radius:10px;color:var(--ink);font:14px Arial,sans-serif}
-.mobile-menu-toggle span:first-child{font-size:20px}.mobile-nav-ready>.btn{display:none}
-.mobile-nav-ready .navlinks{display:none}.mobile-nav-ready.menu-open .navlinks{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;padding:10px 0 0;white-space:normal;overflow:visible}.mobile-nav-ready .navlinks a{padding:13px 12px;min-height:44px;background:#263028;border:1px solid #d1ad7626;border-radius:10px;font-size:14px}
+.js-enabled .mobile-nav-ready .mobile-menu-toggle{display:flex;align-items:center;justify-content:center;gap:7px;min-height:44px;margin-left:auto;padding:8px 11px;background:#263028;border:1px solid #d1ad7644;border-radius:10px;color:var(--ink);font:14px Arial,sans-serif}
+.mobile-menu-toggle span:first-child{font-size:20px}.js-enabled .mobile-nav-ready>.btn{display:none}
+.js-enabled .mobile-nav-ready .navlinks{display:none}.js-enabled .mobile-nav-ready.menu-open .navlinks{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;padding:10px 0 0;white-space:normal;overflow:visible}.js-enabled .mobile-nav-ready .navlinks a{padding:13px 12px;min-height:44px;background:#263028;border:1px solid #d1ad7626;border-radius:10px;font-size:14px}
 .hero-copy{padding:30px 22px 26px}.hero h1{font-size:34px;line-height:1.14;margin:20px 0 24px}.hero p{font-size:16px;line-height:1.65}.hero-photo{height:275px;background-size:auto 100%}.hero-badge{display:none}.hero .btn{min-height:48px}
 .station-highlight{margin-right:0;padding:16px;gap:12px}.station-highlight strong{font-size:18px}.station-highlight span{font-size:12px}
 .booking{margin:20px 16px 0;padding:20px 16px;gap:16px 12px}.booking-control{font-size:15px;min-height:48px}.booking>.btn{grid-column:1/-1;min-height:48px}.booking .guest-field{grid-column:1/-1}.booking-options{font-size:14px}.booking-option{min-height:40px}.note{font-size:12px;line-height:1.6}
@@ -508,20 +508,20 @@ p{margin:18px 0;color:var(--muted)}
 }
 
 .mobile-reservation-link{display:none}
-@media(max-width:760px){.mobile-nav-ready .navlinks .mobile-reservation-link{display:block;grid-column:1/-1;text-align:center;background:var(--gold);color:#201e17;border-color:var(--gold)}}
+@media(max-width:760px){.js-enabled .mobile-nav-ready .navlinks .mobile-reservation-link{display:block;grid-column:1/-1;text-align:center;background:var(--gold);color:#201e17;border-color:var(--gold)}}
 @media(max-width:760px){.apartment-page .eyebrow,.contact-page .eyebrow,.guide-main .eyebrow{font:10px/1.6 Arial,sans-serif;letter-spacing:.16em}.contact-card input,.contact-card textarea{font-size:16px}.booking-field .booking-control{padding:10px}.booking-field .booking-control svg{width:18px;height:18px}}
 @media(max-width:760px){
-.mobile-nav-ready .mobile-menu-toggle{background:transparent;border:1px solid #d1ad7660;border-radius:999px;padding:10px 15px;color:var(--gold);box-shadow:inset 0 1px #ffffff08;font:14px Georgia,serif}
+.js-enabled .mobile-nav-ready .mobile-menu-toggle{background:transparent;border:1px solid #d1ad7660;border-radius:999px;padding:10px 15px;color:var(--gold);box-shadow:inset 0 1px #ffffff08;font:14px Georgia,serif}
 .mobile-menu-toggle span:first-child{font-size:18px}
-.mobile-nav-ready.menu-open .navlinks{gap:0;padding:12px 16px;margin-top:4px;background:linear-gradient(135deg,#2a342c,#202821);border:1px solid #d1ad7635;border-radius:18px;box-shadow:0 12px 24px #0004}
-.mobile-nav-ready .navlinks a{display:flex;align-items:center;padding:14px 10px;background:transparent;border:none;border-bottom:1px solid #d1ad7622;border-radius:0;min-height:48px;font:15px Georgia,serif}
-.mobile-nav-ready .navlinks a[aria-current="page"]{color:var(--gold)}
-.mobile-nav-ready .navlinks .mobile-reservation-link{display:flex;justify-content:center;margin:12px 0 4px;border-radius:12px;background:linear-gradient(110deg,#dbb47c,#c6a06a);border:1px solid #e0bb82;color:#201e17}
+.js-enabled .mobile-nav-ready.menu-open .navlinks{gap:0;padding:12px 16px;margin-top:4px;background:linear-gradient(135deg,#2a342c,#202821);border:1px solid #d1ad7635;border-radius:18px;box-shadow:0 12px 24px #0004}
+.js-enabled .mobile-nav-ready .navlinks a{display:flex;align-items:center;padding:14px 10px;background:transparent;border:none;border-bottom:1px solid #d1ad7622;border-radius:0;min-height:48px;font:15px Georgia,serif}
+.js-enabled .mobile-nav-ready .navlinks a[aria-current="page"]{color:var(--gold)}
+.js-enabled .mobile-nav-ready .navlinks .mobile-reservation-link{display:flex;justify-content:center;margin:12px 0 4px;border-radius:12px;background:linear-gradient(110deg,#dbb47c,#c6a06a);border:1px solid #e0bb82;color:#201e17}
 .apartment-depth .apartment-hero{padding-bottom:48px}.apartment-depth .apartment-highlights{margin-top:0}
 }
-@media(max-width:760px){.mobile-nav-ready.menu-open .navlinks{align-items:stretch}.mobile-nav-ready .navlinks a{height:100%;align-self:stretch}}
+@media(max-width:760px){.js-enabled .mobile-nav-ready.menu-open .navlinks{align-items:stretch}.js-enabled .mobile-nav-ready .navlinks a{height:100%;align-self:stretch}}
 @media(max-width:760px){.apartment-depth .apartment-hero{padding-bottom:0}.apartment-depth .apartment-highlights{margin-top:36px}}
-@media(max-width:760px){.mobile-nav-ready .navlinks .mobile-reservation-link{height:auto;min-height:48px;align-self:center;margin:12px 0 0;padding:12px 16px}.mobile-nav-ready.menu-open .navlinks{padding-bottom:16px}}
+@media(max-width:760px){.js-enabled .mobile-nav-ready .navlinks .mobile-reservation-link{height:auto;min-height:48px;align-self:center;margin:12px 0 0;padding:12px 16px}.js-enabled .mobile-nav-ready.menu-open .navlinks{padding-bottom:16px}}
 @media(max-width:760px){.hero-photo{width:100%;align-self:center;background-position:center center;margin-left:auto;margin-right:auto}}
 @media(max-width:760px){.hero-photo{-webkit-mask-image:linear-gradient(90deg,transparent 0%,#000 13%,#000 87%,transparent 100%);mask-image:linear-gradient(90deg,transparent 0%,#000 13%,#000 87%,transparent 100%)}}
 
