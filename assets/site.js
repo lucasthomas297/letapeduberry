@@ -212,6 +212,16 @@ if(reviewsTrack){
 
 const googleMapFrame=document.querySelector('iframe#location-map');
 if(googleMapFrame){
+ // Anticiper la carte pendant le défilement, sans bloquer l’accueil.
+ if('IntersectionObserver' in window){
+  const mapLoader=new IntersectionObserver(entries=>{
+   if(entries.some(entry=>entry.isIntersecting)){
+    googleMapFrame.loading='eager';
+    mapLoader.disconnect();
+   }
+  },{rootMargin:'2000px 0px'});
+  mapLoader.observe(googleMapFrame);
+ }
  let mapZoom=16;
  const zoomIn=document.querySelector('#map-zoom-in'),zoomOut=document.querySelector('#map-zoom-out');
  const setMapZoom=delta=>{mapZoom=Math.max(3,Math.min(20,mapZoom+delta));const url=new URL(googleMapFrame.src);url.searchParams.set('z',String(mapZoom));googleMapFrame.src=url.href;zoomIn.disabled=mapZoom===20;zoomOut.disabled=mapZoom===3;};
