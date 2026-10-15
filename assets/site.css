@@ -173,9 +173,9 @@ p{margin:18px 0;color:var(--muted)}
 @media(max-width:1000px){.discoveries .photo-grid.photo-mosaic{grid-template-columns:1fr}}
 @media(max-width:760px){.photo-grid.photo-mosaic{grid-template-columns:1fr;gap:26px}}
 .lightbox{max-width:96vw;max-height:96vh;width:96vw;height:96vh;border:0;padding:40px 20px 16px;background:transparent;color:var(--ink);overflow:hidden}
-.lightbox::backdrop{background:#080b09f5}
+.lightbox::backdrop{background:rgb(8 11 9 / var(--lightbox-shade,.96))}
 .lightbox[open]{display:flex;flex-direction:column;align-items:center;justify-content:center}
-.lightbox-stage{position:relative;display:flex;align-items:center;justify-content:center;max-width:100%;min-height:0;touch-action:pan-y pinch-zoom;user-select:none;cursor:grab}
+.lightbox-stage{position:relative;display:flex;align-items:center;justify-content:center;max-width:100%;min-height:0;touch-action:pinch-zoom;user-select:none;cursor:grab}
 .lightbox-stage:active{cursor:grabbing}
 .lightbox img{display:block;max-height:calc(90vh - 90px);max-height:calc(100svh - 150px);max-width:90vw;width:auto;height:auto;object-fit:contain;border-radius:8px;user-select:none;-webkit-user-drag:none}
 .lightbox p{font-size:15px;margin:14px 0}
@@ -574,3 +574,8 @@ p{margin:18px 0;color:var(--muted)}
 .faq-list summary::-webkit-details-marker{display:none}.faq-list summary::after{content:'+';flex:none;font:24px/1 Arial,sans-serif;color:var(--gold)}.faq-list details[open] summary::after{content:'−'}.faq-list details[open] summary{color:var(--gold)}.faq-list summary:focus-visible{outline:2px solid var(--gold);outline-offset:-5px;border-radius:16px}
 .faq-answer{padding:0 24px 22px}.faq-answer p{font-size:16px;line-height:1.7;margin:0 0 12px}.faq-answer p:last-child{margin-bottom:0}.faq-answer a{text-decoration:underline;text-underline-offset:3px;overflow-wrap:anywhere}
 @media(max-width:760px){.stay-faq{grid-template-columns:1fr;gap:24px}.faq-intro{padding-top:0}.faq-intro h2{font-size:32px}.faq-intro>p:not(.eyebrow){max-width:none;font-size:16px}.faq-list summary{font-size:17px;padding:18px;gap:16px;min-height:64px}.faq-answer{padding:0 18px 20px}.faq-answer p{font-size:16px;line-height:1.65}}
+
+/* La photo accompagne le geste de fermeture, le fond révèle la galerie. */
+.lightbox-dragging .lightbox-viewport{overflow:visible}
+.lightbox-dragging .lightbox-slide[aria-hidden="true"]{visibility:hidden}
+.lightbox-dragging .lightbox-arrow,.lightbox-dragging .close,.lightbox-dragging #lightbox-caption{opacity:0;pointer-events:none}

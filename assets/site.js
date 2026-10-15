@@ -159,7 +159,14 @@ if(dialog){
  function position(displacement,duration=0){const size=width();for(const slide of slides){slide.frame.style.transition=duration?`transform ${duration}ms cubic-bezier(.2,.75,.25,1)`:'none';slide.frame.style.transform=`translate3d(${slide.offset*size+displacement}px,0,0)`;}}
  function placeCaption(){if(dialog.open)caption.style.top=(large.getBoundingClientRect().bottom-dialog.getBoundingClientRect().top+12)+'px';}
  large.addEventListener('load',placeCaption);
- function showPhoto(index){clearTimeout(finishTimer);animating=false;gesture=null;currentIndex=indexOf(index);for(const slide of slides){const image=photos[indexOf(currentIndex+slide.offset)].querySelector('img');slide.image.src=image.src;if(slide.offset===0)slide.image.alt=image.alt;}caption.textContent=large.alt;position(0);requestAnimationFrame(placeCaption);}
+ function resetDismiss(){viewport.style.transition='none';viewport.style.transform='';dialog.style.removeProperty('--lightbox-shade');dialog.classList.remove('lightbox-dragging');}
+ function dragPhoto(dx,dy,duration=0){
+  const distance=Math.hypot(dx,dy),progress=Math.min(1,distance/Math.max(180,viewport.clientHeight*.5));
+  viewport.style.transition=duration?`transform ${duration}ms cubic-bezier(.2,.75,.25,1)`:'none';
+  viewport.style.transform=`translate3d(${dx}px,${dy}px,0) scale(${1-progress*.12})`;
+  dialog.style.setProperty('--lightbox-shade',String(.96-progress*.7));
+ }
+ function showPhoto(index){resetDismiss();clearTimeout(finishTimer);animating=false;gesture=null;currentIndex=indexOf(index);for(const slide of slides){const image=photos[indexOf(currentIndex+slide.offset)].querySelector('img');slide.image.src=image.src;if(slide.offset===0)slide.image.alt=image.alt;}caption.textContent=large.alt;position(0);requestAnimationFrame(placeCaption);}
  function settle(step=0){
   gesture=null;animating=true;const duration=reduced.matches?0:260;
   const finish=()=>{if(step)showPhoto(currentIndex+step);else{animating=false;position(0);}};
@@ -173,28 +180,41 @@ if(dialog){
  dialog.addEventListener('keydown',event=>{if(event.key==='ArrowLeft'||event.key==='ArrowRight'){event.preventDefault();navigate(event.key==='ArrowRight'?1:-1);}});
  stage.addEventListener('pointerdown',event=>{
   if(event.target.closest('button')||(event.pointerType==='mouse'&&event.button!==0)||animating)return;
-  pointers.add(event.pointerId);if(pointers.size!==1){gesture=null;position(0);return;}
-  gesture={id:event.pointerId,x:event.clientX,y:event.clientY,start:performance.now(),mode:'pending'};stage.setPointerCapture(event.pointerId);
+  pointers.add(event.pointerId);if(pointers.size!==1){gesture=null;resetDismiss();position(0);return;}
+  gesture={id:event.pointerId,x:event.clientX,y:event.clientY,start:performance.now(),mode:null};stage.setPointerCapture(event.pointerId);
  });
  stage.addEventListener('pointermove',event=>{
   if(!gesture||gesture.id!==event.pointerId)return;
   const dx=event.clientX-gesture.x,dy=event.clientY-gesture.y;
-  if(gesture.mode==='pending'&&Math.max(Math.abs(dx),Math.abs(dy))>8)gesture.mode=Math.abs(dx)>Math.abs(dy)*1.2?'horizontal':'vertical';
+  if(!gesture.mode&&Math.hypot(dx,dy)>8)gesture.mode=Math.abs(dx)>Math.abs(dy)*1.2?'horizontal':'dismiss';
   if(gesture.mode==='horizontal')position(Math.max(-width(),Math.min(width(),dx)));
+  if(gesture.mode==='dismiss'){dialog.classList.add('lightbox-dragging');dragPhoto(dx,dy);}
  });
- stage.addEventListener('pointerup',event=>{
+ function finishDrag(event,cancelled=false){
   const started=gesture;pointers.delete(event.pointerId);if(!started||started.id!==event.pointerId)return;
-  const dx=event.clientX-started.x,dy=event.clientY-started.y,velocity=Math.abs(dx)/Math.max(1,performance.now()-started.start);
-  const horizontal=started.mode==='horizontal'&&Math.abs(dx)>Math.abs(dy)*1.2;
-  const enough=Math.abs(dx)>=Math.max(50,width()*.18)||(Math.abs(dx)>25&&velocity>.5);
-  settle(horizontal&&enough?(dx<0?1:-1):0);
- });
- stage.addEventListener('pointercancel',event=>{pointers.delete(event.pointerId);if(gesture?.id===event.pointerId)settle(0);});
+  gesture=null;
+  const dx=event.clientX-started.x,dy=event.clientY-started.y,distance=Math.hypot(dx,dy),velocity=distance/Math.max(1,performance.now()-started.start);
+  if(started.mode==='horizontal'){
+   const enough=Math.abs(dx)>=Math.max(50,width()*.18)||(Math.abs(dx)>25&&Math.abs(dx)/Math.max(1,performance.now()-started.start)>.5);
+   settle(!cancelled&&enough?(dx<0?1:-1):0);return;
+  }
+  const dismiss=!cancelled&&started.mode==='dismiss'&&(distance>=90||(distance>35&&velocity>.5));
+  animating=true;const duration=reduced.matches?0:220;
+  if(dismiss){
+   const travel=Math.max(innerWidth,innerHeight)*1.25,ratio=travel/Math.max(1,distance);
+   dragPhoto(dx*ratio,dy*ratio,duration);dialog.style.setProperty('--lightbox-shade','0');
+  }else dragPhoto(0,0,duration);
+  const finish=()=>{resetDismiss();animating=false;if(dismiss)dialog.close();};
+  if(duration)finishTimer=setTimeout(finish,duration+20);else finish();
+ }
+ stage.addEventListener('pointerup',event=>finishDrag(event));
+ stage.addEventListener('pointercancel',event=>finishDrag(event,true));
+ stage.addEventListener('lostpointercapture',event=>{if(gesture?.id===event.pointerId)finishDrag(event,true);});
  viewport.addEventListener('dragstart',event=>event.preventDefault());
  window.addEventListener('resize',()=>{if(dialog.open){pointers.clear();showPhoto(currentIndex);}});
  dialog.querySelector('.close').addEventListener('click',()=>dialog.close());
  dialog.addEventListener('click',event=>{if(event.target===dialog)dialog.close();});
- dialog.addEventListener('close',()=>{clearTimeout(finishTimer);animating=false;gesture=null;pointers.clear();document.body.style.overflow='';opener?.focus();});
+ dialog.addEventListener('close',()=>{resetDismiss();clearTimeout(finishTimer);animating=false;gesture=null;pointers.clear();document.body.style.overflow='';opener?.focus();});
 }
 
 
