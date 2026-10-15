@@ -29,3 +29,6 @@
  .photos-editorial .photo-cluster .photo-support .photo-open{aspect-ratio:3/2}
  .photos-editorial .photo-cluster figcaption{font-size:13px}
 }
+
+/* Conserver les inscriptions de la photo 10 dans le cadre. */
+.photos-editorial .photo-cluster .photo-with-labels img{object-fit:cover;object-position:left center;padding:0;transform:none}
