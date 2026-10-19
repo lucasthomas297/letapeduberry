@@ -1,5 +1,5 @@
 import {depositMethod,depositSummary,bankAuthorizationMode} from './deposit-policy.mjs';
-export const CONTRACT_VERSION='2026-10-11-tax-detail';
+export const CONTRACT_VERSION='2026-10-20-early-arrival';
 export const escapeHtml=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 export function contractReady(env){return env.CONTRACT_APPROVED==='true'&&['OWNER_NAME','OWNER_ADDRESS','OWNER_STATUS','APARTMENT_AREA','APARTMENT_ROOMS','APARTMENT_CLASSIFICATION','TOURIST_TAX_DESCRIPTION','DEPOSIT_RELEASE_TERMS','GUEST_INSURANCE_TERMS','INTERMEDIARY_TERMS'].every(key=>typeof env[key]==='string'&&env[key].trim());}
 export const euros=cents=>new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR'}).format(cents/100);
@@ -8,7 +8,7 @@ const dateLabel=value=>new Intl.DateTimeFormat('fr-FR',{day:'numeric',month:'lon
 // Round the municipal amount per person/night, then the additional departmental part.
 export function stayBreakdown(stay,env){
  const nights=(Date.parse(stay.departure)-Date.parse(stay.arrival))/86400000;
- const options=(stay.early_arrival?500:0)+(stay.late_departure?500:0);
+ let options=(stay.early_arrival?1000:0)+(stay.late_departure?500:0);
  if(!Number.isInteger(nights)||nights<1||!Number.isInteger(stay.total_cents)||stay.total_cents<options)throw new Error('Montant ou durée invalide');
  const guests=Number(stay.guests),taxable=Number(stay.taxable_guests??guests);
  if(![1,2].includes(guests)||!Number.isInteger(taxable)||taxable<0||taxable>guests)throw new Error('Occupants imposables invalides');
@@ -29,6 +29,8 @@ export function stayBreakdown(stay,env){
   tax+=found;
   communalTotal+=nightDetail.communalPerPerson*taxable;departmentalTotal+=nightDetail.departmentalPerPerson*taxable;daily.push(nightDetail);
  }
+ // Preserve prices already quoted before the early-arrival increase.
+ if(stay.early_arrival&&stay.total_cents===gross+options-500)options-=500;
  if(gross+options!==stay.total_cents)throw new Error('Le tarif enregistré nécessite une ventilation manuelle');
  return {nights,location:stay.total_cents-options-tax,options,tax,total:stay.total_cents,taxable,taxDetails:{rate,additionalRate:additional,communal:communalTotal,departmental:departmentalTotal,total:tax,daily}};
 }
@@ -53,7 +55,7 @@ export function documentModel(stay,env){
  const insurance="Je déclare être titulaire d'une assurance responsabilité civile vie privée d'occupant d'immeuble pris en location temporaire (risque villégiature).";
  return {version:CONTRACT_VERSION,bankAuthorizationMode:bankAuthorizationMode(stay),depositMethod:depositMethod(stay),depositSummary:depositSummary(stay),number,rate:stay.rate,owner:[env.OWNER_NAME||'[Nom à compléter]',env.OWNER_ADDRESS||'[Adresse à compléter]',env.OWNER_PHONE||'[Téléphone à compléter]','contact@letapeduberry.fr',env.OWNER_STATUS||'[Statut à compléter]',env.OWNER_RENTAL_STATUS||'[Statut LMP / LMNP à compléter]','SIRET : '+(env.OWNER_SIRET||'[À préciser]')],guest:[stay.customer_name||'',stay.customer_address||'',stay.customer_email||'',stay.customer_phone||''],
  address:'16 Place du Général Leclerc, 18000 Bourges',area:env.APARTMENT_AREA||'47',rooms:env.APARTMENT_ROOMS||'2 pièces (T2)',classification:env.APARTMENT_CLASSIFICATION||'Non classé',registration:env.OWNER_REGISTRATION&&env.OWNER_REGISTRATION!=='Aucun numéro communiqué'?env.OWNER_REGISTRATION:null,
- arrival:dateLabel(stay.arrival),departure:dateLabel(stay.departure),nights:b.nights,guests:stay.guests,arrivalTime:stay.early_arrival?'14 h':'16 h',departureTime:stay.late_departure?'12 h':'11 h',early:Boolean(stay.early_arrival),late:Boolean(stay.late_departure),price:b,payment:stay.payment_preference||'card',
+ arrival:dateLabel(stay.arrival),departure:dateLabel(stay.departure),nights:b.nights,guests:stay.guests,arrivalTime:stay.early_arrival?'14 h':'16 h',departureTime:stay.late_departure?'12 h':'11 h',early:Boolean(stay.early_arrival),late:Boolean(stay.late_departure),earlyPrice:stay.early_arrival?b.options-(stay.late_departure?500:0):1000,price:b,payment:stay.payment_preference||'card',
  intermediary:env.INTERMEDIARY_TERMS||'[Rémunération d’intermédiaire à préciser]',insurance,insuranceAccepted:Boolean(stay.insurance_accepted_at),accepted:Boolean(stay.contract_accepted_at),acceptedAt:stay.contract_accepted_at||null,signer:stay.contract_signer||null,
  description:'Appartement entièrement rénové, à usage exclusif des voyageurs. Rez-de-chaussée sans escalier ; la configuration du terrain procure l’intimité d’un premier étage côté pièce de vie.',
  location:'À environ 50 mètres de la gare de Bourges et à 10 minutes à pied du centre historique. Restaurants, boulangerie, commerces, services et transports à proximité immédiate. Réseau de bus gratuit à Bourges.',
@@ -69,7 +71,8 @@ export function documentModel(stay,env){
 const e=escapeHtml;
 const para=t=>`<p>${e(t)}</p>`;
 const list=items=>`<ul>${items.map(t=>`<li>${e(t)}</li>`).join('')}</ul>`;
-export function renderDescription(m){return `<h1>Fiche descriptive - L’Étape du Berry</h1><p>Associée au contrat n° ${e(m.number)}</p><h2>Le logement et sa situation</h2>${para(m.address)}${para(`${m.area} m² · ${m.rooms} · ${m.classification} · 2 voyageurs maximum`)}${para(m.description)}${para(m.location)}<h2>Le loueur</h2>${para(m.owner.join('\n'))}${m.registration?para('Numéro d’enregistrement : '+m.registration):''}<h2>Mobilier et équipements</h2>${m.inventory.map(([title,t])=>`<h3>${e(title)}</h3>${para(t)}`).join('')}<h2>Services et stationnement</h2>${list(m.services)}${para(m.parking)}<h2>Prix et modalités de paiement</h2>${priceHtml(m)}${para(m.paymentTerms)}${para('Ménage et charges compris. '+(m.depositSummary||'Dépôt de garantie : 300 €, par empreinte bancaire, distinct du prix du séjour.'))}${para('Arrivée anticipée dès 14 h : 5 €. Départ tardif jusqu’à 12 h : 5 €. Sur demande et sous réserve de disponibilité.')}`;}
+export const earlyArrivalPrice=m=>m.earlyPrice??(m.early?m.price.options-(m.late?500:0):500);
+export function renderDescription(m){return `<h1>Fiche descriptive - L’Étape du Berry</h1><p>Associée au contrat n° ${e(m.number)}</p><h2>Le logement et sa situation</h2>${para(m.address)}${para(`${m.area} m² · ${m.rooms} · ${m.classification} · 2 voyageurs maximum`)}${para(m.description)}${para(m.location)}<h2>Le loueur</h2>${para(m.owner.join('\n'))}${m.registration?para('Numéro d’enregistrement : '+m.registration):''}<h2>Mobilier et équipements</h2>${m.inventory.map(([title,t])=>`<h3>${e(title)}</h3>${para(t)}`).join('')}<h2>Services et stationnement</h2>${list(m.services)}${para(m.parking)}<h2>Prix et modalités de paiement</h2>${priceHtml(m)}${para(m.paymentTerms)}${para('Ménage et charges compris. '+(m.depositSummary||'Dépôt de garantie : 300 €, par empreinte bancaire, distinct du prix du séjour.'))}${para(`Arrivée anticipée dès 14 h : ${euros(earlyArrivalPrice(m))}. Départ tardif jusqu’à 12 h : 5 €. Sur demande et sous réserve de disponibilité.`)}`;}
 export function priceRows(m){
  const tax=m.price.taxDetails;
  return [['Prix de la location',m.price.location],['Prix des options éventuelles',m.price.options],...(tax?[['Taxe de séjour communale',tax.communal],[`Majoration départementale (${tax.additionalRate*100} %)`,tax.departmental]]:[['Taxe de séjour',m.price.tax]]),['TOTAL',m.price.total]];

@@ -217,9 +217,9 @@ test('requests disabled until integration complete; cross-origin requests reject
 });
 const details={arrival:'2026-10-23',departure:'2026-10-26',rate:'fixed',early:true,late:true,guests:2,payment:'card',name:'Voyageur Test',email:'voyageur@example.test',phone:'+33 6 00 00 00 00',rulesAccepted:true,insuranceAccepted:true,depositAccepted:true,comment:'Séjour touristique',address:'Adresse de test'};
 test('confirmed rates: Fri/Sat/Sun, options once, cents on server',()=>{
- assert.deepEqual(quoteStay(details,'2026-10-03'),{nights:3,totalCents:23000});
- assert.equal(quoteStay({...details,rate:'flex'},'2026-10-03').totalCents,25600);
- assert.equal(validateStay({...details,totalCents:1},'2026-10-03').totalCents,23000);
+ assert.deepEqual(quoteStay(details,'2026-10-03'),{nights:3,totalCents:23500});
+ assert.equal(quoteStay({...details,rate:'flex'},'2026-10-03').totalCents,26100);
+ assert.equal(validateStay({...details,totalCents:1},'2026-10-03').totalCents,23500);
  for(const change of [{rulesAccepted:false},{insuranceAccepted:false},{insuranceAccepted:undefined},{guests:3},{early:'true'},{email:'wrong'},{arrival:'2026-02-30'},{departure:'2027-02-01'}])assert.throws(()=>validateStay({...details,...change},'2026-10-03'));
 });
 test('real SQL schema: consent required, payment session unique, email queue atomic',()=>{
@@ -474,7 +474,9 @@ test('automatic guarantee mail: 48-hour trigger, last-minute confirmation, retri
  for(const name of ['0001_stays.sql','0002_booking_flow.sql','0003_insurance_consent.sql','0004_cash_receipts.sql','0005_contract_numbers.sql','0006_deposit_lifecycle.sql','0007_cancellations.sql','0008_damage_claims.sql'])db.exec(readFileSync(new URL('./migrations/'+name,import.meta.url),'utf8'));
  function prepare(sql,args=[]){return {bind:(...values)=>prepare(sql,values),first:async()=>db.prepare(sql).get(...args)??null,all:async()=>({results:db.prepare(sql).all(...args)}),run:async()=>db.prepare(sql).run(...args)};}
  const env={STRIPE_EXTENDED_AUTHORIZATION_ENABLED:'false',STRIPE_SECRET_KEY:'sk_test_dummy',SITE_ORIGIN:'https://letapeduberry.fr',CONTACT_FROM:'L’Étape du Berry <site@messages.letapeduberry.fr>',RESEND_API_KEY:'local',BERRY_DB:{prepare,batch:async statements=>{db.exec('BEGIN');try{for(const statement of statements)await statement.run();db.exec('COMMIT');}catch(e){db.exec('ROLLBACK');throw e;}}}};
- const arrival=parisDay(new Date(Date.now()+5*86400000)),departure=parisDay(new Date(Date.now()+6*86400000));
+ const arrival=parisDay(new Date(Date.now()+5*86400000));
+ // Calendar-day arithmetic avoids the repeated local hour when DST ends.
+ const departure=new Date(Date.parse(arrival+'T12:00:00Z')+86400000).toISOString().slice(0,10);
  const insert=db.prepare(`INSERT INTO stays(id,request_key,payload_hash,arrival,departure,status,customer_name,customer_email,customer_phone,guests,rate,early_arrival,late_departure,total_cents,payment_preference,rules_version,rules_accepted_at,created_at) VALUES (?,?, 'hash',?, ?,?,'Fictif','guest@example.test','0600000000',1,'fixed',1,0,7500,'cash','v','time','time')`);
  insert.run('automatic','automatic',arrival,departure,'confirmed');
  db.exec("UPDATE stays SET contract_accepted_at='time' WHERE id='automatic'; INSERT INTO mail_outbox(id,stay_id,kind,created_at,sent_at) VALUES('auto-confirm','automatic','confirmation','time',NULL);");
@@ -621,3 +623,15 @@ test('damage retention: justified notice, exact amount, expired hold and uncerta
  for(const field of ['street','postalCode','city'])assert.throws(()=>validateStay({...details,addressParts:{...addressParts,[field]:''}},'2026-10-03'));
  assert.equal(validateStay({...details,addressParts:{street:'12 Test Road',postalCode:'SW1A 1AA',city:'London'}},'2026-10-03').address,'12 Test Road, SW1A 1AA London');
  });
+
+test('early arrival costs 10 euros for new quotes; existing 5-euro quotes keep their breakdown',()=>{
+ const base={arrival:'2026-11-13',departure:'2026-11-15',guests:2,rate:'fixed',early_arrival:1,late_departure:1};
+ const env={TOURIST_TAX_RATE:'0.05',TOURIST_TAX_ADDITIONAL_RATE:'0.10'};
+ const old=stayBreakdown({...base,total_cents:16000},env),current=stayBreakdown({...base,total_cents:16500},env);
+ assert.equal(old.options,1000);assert.equal(current.options,1500);
+ assert.equal(old.tax,current.tax);assert.equal(old.location,current.location);
+ const quote={arrival:base.arrival,departure:base.departure,rate:'fixed',early:false,late:false};
+ const amount=quoteStay(quote,'2026-10-20').totalCents;
+ assert.equal(quoteStay({...quote,early:true},'2026-10-20').totalCents-amount,1000);
+ assert.equal(quoteStay({...quote,late:true},'2026-10-20').totalCents-amount,500);
+});

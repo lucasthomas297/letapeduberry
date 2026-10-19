@@ -11,7 +11,7 @@ export function quoteStay(data,today) {
   const weekend=[5,6].includes(new Date(day).getUTCDay());
   total+=data.rate==='fixed'?(weekend?7500:7000):(weekend?8400:7800);
  }
- return {nights,totalCents:total+(data.early?500:0)+(data.late?500:0)};
+ return {nights,totalCents:total+(data.early?1000:0)+(data.late?500:0)};
 }
 export function validateStay(data,today) {
  if(!data || typeof data!=='object' || Array.isArray(data))throw new Error('Demande invalide.');

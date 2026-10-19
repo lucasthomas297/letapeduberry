@@ -1,5 +1,5 @@
 import PDFLib from './vendor/pdf-lib.cjs';
-import {savedDocumentModel,euros,arrivalTerms,priceRows} from './contract.mjs';
+import {savedDocumentModel,euros,arrivalTerms,priceRows,earlyArrivalPrice} from './contract.mjs';
 import {contractPdf as legacyPdf,contractBlocks} from './contract-pdf-legacy.mjs';
 import photo64 from './pdf-photo.mjs';
 export {contractBlocks};
@@ -57,7 +57,7 @@ async function createDocument(m,type){
   const h=Math.max(ownerH,guestH);box('Le loueur',m.owner.join('\n'),M,y,half,h);box('Le voyageur',m.guest.join('\n'),M+half+14,y,half,h);y-=h+18;
   heading('Votre séjour');paragraph(m.address+'\n'+m.area+' m² · '+m.rooms+' · '+m.classification);
   if(m.registration)paragraph('Numéro d’enregistrement : '+m.registration);
-  const stay=`Du ${m.arrival} à ${m.arrivalTime} au ${m.departure} à ${m.departureTime}\n${m.nights} nuits · ${m.guests} voyageurs · Capacité maximale : 2 personnes\n${[m.early?'Arrivée anticipée : + 5 €':null,m.late?'Départ tardif : + 5 €':null].filter(Boolean).join(' · ')||'Aucune option d’horaires souscrite.'}\n${arrivalTerms(m)} Le réservant doit être majeur.`;
+  const stay=`Du ${m.arrival} à ${m.arrivalTime} au ${m.departure} à ${m.departureTime}\n${m.nights} nuits · ${m.guests} voyageurs · Capacité maximale : 2 personnes\n${[m.early?`Arrivée anticipée : + ${euros(earlyArrivalPrice(m))}`:null,m.late?'Départ tardif : + 5 €':null].filter(Boolean).join(' · ')||'Aucune option d’horaires souscrite.'}\n${arrivalTerms(m)} Le réservant doit être majeur.`;
   const sh=lines(stay,9.3,C-24).length*13+48;box('Dates et horaires',stay,M,y,C,sh);y-=sh+16;
   const priceH=totalsHeight(half);ensure(priceH+18);totals(M,y,half);payments(M+half+14,y,half,priceH);y-=priceH+18;
   paragraph(m.paymentTerms,9.5,13);paragraph(m.intermediary,9.5,13);
@@ -86,7 +86,7 @@ async function createDocument(m,type){
   box('L’appartement',`${m.area} m²\n${m.rooms}\n1 chambre · Lit double\n2 voyageurs maximum\n${m.classification}\nRez-de-chaussée sans escalier`,M+iw+16,y,C-iw-16,ih);y-=ih+20;
   heading('Adresse et situation');paragraph(m.address);paragraph(m.description);paragraph(m.location);
   heading('Le loueur');paragraph(m.owner.join('\n'),9.5,13);if(m.registration)paragraph('Numéro d’enregistrement : '+m.registration);
-  paragraph('Arrivée anticipée dès 14 h : 5 €. Départ tardif jusqu’à 12 h : 5 €. Sur demande et sous réserve de disponibilité.',9.3,13);
+  paragraph(`Arrivée anticipée dès 14 h : ${euros(earlyArrivalPrice(m))}. Départ tardif jusqu’à 12 h : 5 €. Sur demande et sous réserve de disponibilité.`,9.3,13);
   paragraph(m.depositSummary||'Dépôt de garantie : 300 €, par empreinte bancaire demandée 48 heures avant l’arrivée ; libération sous 48 heures après le départ sans dommage. Modalités détaillées au contrat.',9.3,13);
   paragraph('Fiche descriptive associée au contrat de location n° '+m.number+'.',9,12);
   add();heading('Mobilier et équipements');

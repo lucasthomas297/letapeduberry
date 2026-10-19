@@ -69,7 +69,7 @@ async function load(){
    if(stay.payment_test_available&&stay.payment_test!==1){const testButton=text(card,'button','Utiliser Stripe en mode test');testButton.className='secondary';testButton.onclick=async()=>{if(!confirm('Cette demande personnelle utilisera une carte fictive Stripe, sans débit ni frais. Les dates seront réellement bloquées après acceptation. Continuer ?'))return;testButton.disabled=true;try{await adminPost('payment-test',{id:stay.id,confirmed:true});await load();}catch(error){status.textContent=error.message;testButton.disabled=false;}};}
    text(card,'p',stay.rate==='fixed'?'Tarif non remboursable':'Tarif remboursable');
    text(card,'p',stay.payment_preference==='cash'?'Paiement en espèces à l’arrivée':'Paiement par carte bancaire en ligne');
-   const options=[stay.early_arrival?'Arrivée dès 14 h (+ 5 €)':null,stay.late_departure?'Départ jusqu’à midi (+ 5 €)':null].filter(Boolean);
+   const options=[stay.early_arrival?'Arrivée anticipée dès 14 h':null,stay.late_departure?'Départ jusqu’à midi (+ 5 €)':null].filter(Boolean);
    text(card,'p',options.length?options.join(' · '):'Aucune option d’horaires');
    if(stay.tax_details){
     const tax=stay.tax_details,panel=text(card,'details','');panel.className='notice';

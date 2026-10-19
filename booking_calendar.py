@@ -123,7 +123,7 @@ def price_stay(arrival: str, departure: str, rate: str, early: bool = False, lat
     for n in range((end - start).days):
         weekday = (start + dt.timedelta(days=n)).weekday()
         amount += (75 if weekday in {4, 5} else 70) if rate == "fixed" else (84 if weekday in {4, 5} else 78)
-    return amount + (5 if early else 0) + (5 if late else 0)
+    return amount + (10 if early else 0) + (5 if late else 0)
 
 
 def add_booking_request(path: str, details: dict) -> str:
