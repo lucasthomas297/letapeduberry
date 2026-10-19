@@ -61,6 +61,7 @@ p{margin:18px 0;color:var(--muted)}
 .calendar-hint{margin-top:13px;padding-top:11px;border-top:1px solid #c3a27138;color:var(--muted);font:12px/1.4 Arial,sans-serif;text-align:center}
 .booking-error{grid-column:1/-1;color:#f0c8a2;font:13px/1.4 Arial,sans-serif;text-align:center}
 .booking .btn{align-self:end}
+.booking-standard-hours{grid-column:1/-1;margin:0;text-align:center;color:var(--muted);font:13px/1.7 Arial,sans-serif}.booking-standard-hours span{display:inline-block}.booking-standard-hours strong{color:var(--ink);font-weight:600}
 .booking-options{grid-column:1/-1;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:10px 24px;padding:15px 0 5px;border-top:1px solid #c3a27138;font:14px/1.4 Arial,sans-serif}
 .booking-options-title{color:var(--gold);font-weight:600}
 .booking .booking-option{display:inline-flex;align-items:center;gap:8px;font:14px/1.4 Arial,sans-serif;letter-spacing:0;text-transform:none;cursor:pointer}
