@@ -1,3 +1,4 @@
+import {nightlyPrice} from '../assets/nightly-prices.mjs';
 import {depositMethod,depositSummary,bankAuthorizationMode} from './deposit-policy.mjs';
 export const CONTRACT_VERSION='2026-10-20-early-arrival';
 export const escapeHtml=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
@@ -17,9 +18,10 @@ export function stayBreakdown(stay,env){
  let tax=0,gross=0,communalTotal=0,departmentalTotal=0;const daily=[];
  for(let i=0;i<nights;i++){
   const day=new Date(Date.parse(stay.arrival)+i*86400000),weekend=[5,6].includes(day.getUTCDay());
-  const total=stay.rate==='fixed'?(weekend?7500:7000):(weekend?8400:7800);gross+=total;
+  const total=nightlyPrice(day.toISOString().slice(0,10),stay.rate,stay.rules_version||'legacy');gross+=total;
   const cap=day.getUTCFullYear()>=2027?490:420;
-  const estimate=Math.round(total/(1+rate*(1+additional)*taxable/guests));
+  // Above the cap, the proportional estimate is too low; include the capped solution.
+  const estimate=Math.max(Math.round(total/(1+rate*(1+additional)*taxable/guests)),total-(cap+Math.round(cap*additional))*taxable);
   let found,nightDetail;
   for(let net=Math.max(0,estimate-10);net<=Math.min(total,estimate+10);net++){
    const communal=Math.min(cap,Math.round(net/guests*rate)),perPerson=communal+Math.round(communal*additional);

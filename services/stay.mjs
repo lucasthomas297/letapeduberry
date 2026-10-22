@@ -1,5 +1,6 @@
+import {nightlyPrice,PRICE_VERSION} from '../assets/nightly-prices.mjs';
 import {dateNumber} from './calendar.mjs';
-export const RULES_VERSION='2026-10-10-standard-deposit';
+export const RULES_VERSION=PRICE_VERSION;
 const DAY=86400000;
 export function quoteStay(data,today) {
  const arrival=dateNumber(data.arrival),departure=dateNumber(data.departure),now=dateNumber(today);
@@ -8,8 +9,7 @@ export function quoteStay(data,today) {
  if(!['fixed','flex'].includes(data.rate) || typeof data.early!=='boolean' || typeof data.late!=='boolean')throw new Error('Tarif ou options invalides.');
  let total=0;
  for(let day=arrival;day<departure;day+=DAY) {
-  const weekend=[5,6].includes(new Date(day).getUTCDay());
-  total+=data.rate==='fixed'?(weekend?7500:7000):(weekend?8400:7800);
+  total+=nightlyPrice(new Date(day).toISOString().slice(0,10),data.rate);
  }
  return {nights,totalCents:total+(data.early?1000:0)+(data.late?500:0)};
 }
