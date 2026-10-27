@@ -1,0 +1,15 @@
+# Canonical public URLs. Keep booking, payment and private routes untouched.
+/index.html / 301
+/index / 301
+/appartement.html /appartement 301
+/appartement/ /appartement 301
+/photos.html /photos 301
+/photos/ /photos 301
+/adresses.html /adresses 301
+/adresses/ /adresses 301
+/contact.html /contact 301
+/contact/ /contact 301
+/mentions-legales.html /mentions-legales 301
+/mentions-legales/ /mentions-legales 301
+/confidentialite.html /confidentialite 301
+/confidentialite/ /confidentialite 301
