@@ -21,8 +21,8 @@
 .guide-chapters button:hover,.guide-chapters button.is-current{background:var(--gold);border-color:var(--gold);color:#23241e}
 .guide-chapters button.is-current span,.guide-chapters button:hover span{color:#23241e}
 .guide-book{position:relative;max-width:1280px;margin:0 auto;min-height:690px;border:1px solid #bca88b;border-radius:18px;background:#e9e1d3;box-shadow:0 24px 70px #0007,0 0 0 8px #bd9e7040;overflow:hidden}
-.guide-book:before{content:'';position:absolute;z-index:2;left:49.8%;top:0;bottom:0;width:17px;transform:translateX(-50%);background:linear-gradient(90deg,#5e523833,#fff8eb55,#392d2222);pointer-events:none}
-.guide-page{display:grid;grid-template-columns:1fr 1fr;min-height:690px;color:#252923}
+.guide-book:before{content:'';position:absolute;z-index:12;left:50%;top:0;bottom:0;width:17px;transform:translateX(-50%);background:linear-gradient(90deg,#5e523833,#fff8eb55,#392d2222);pointer-events:none}
+.guide-page{position:relative;display:grid;grid-template-columns:1fr 1fr;min-height:690px;color:#252923}
 .guide-book.guide-ready .guide-page:not(.is-active){display:none}
 .guide-page.is-active{animation:guide-page-in .42s ease both}
 @keyframes guide-page-in{from{opacity:.2;transform:perspective(1200px) rotateY(-5deg) translateX(14px)}to{opacity:1;transform:perspective(1200px) rotateY(0) translateX(0)}}
@@ -69,6 +69,74 @@
 
 /* Le chapitre suit le geste, sans remplacer brusquement le contenu. */
 .guide-book.guide-slider{touch-action:pan-y pinch-zoom;min-height:0;transition:height .2s ease}
-.guide-book.guide-ready.guide-slider .guide-page{display:grid;position:absolute;top:0;left:0;width:100%;animation:none;will-change:transform}
+.guide-book.guide-ready.guide-slider .guide-page{position:relative;display:grid;position:absolute;top:0;left:0;width:100%;animation:none;will-change:transform}
 @media(max-width:760px){.guide-book.guide-ready.guide-slider .guide-page{display:flex}}
 @media(prefers-reduced-motion:reduce){.guide-book.guide-slider{transition:none}}
+
+/* Ajouts du carnet : coordonnées discrètes, liens confortables au toucher. */
+.guide-address .guide-location{font:11px/1.5 Arial,sans-serif;color:#7a715f;margin:9px 0 10px}
+.guide-address-links{display:flex;flex-wrap:wrap;gap:9px 18px}
+.guide-address-links a{min-height:22px;align-items:center}
+@media(max-width:760px){.guide-address-links{gap:8px 16px}.guide-address-links a{min-height:32px}}
+
+/* Deux restaurants par feuillet ; numérotation propre à chaque rubrique. */
+.guide-restaurant-spread{background:#eee6d8}
+.restaurant-leaf{min-width:0;min-height:690px;padding:32px clamp(28px,3.5vw,55px) 24px;display:flex;flex-direction:column;background:linear-gradient(135deg,#f6f0e5,#e8decb)}
+.restaurant-leaf-right{background:linear-gradient(225deg,#f6f0e5,#e8decb)}
+.restaurant-leaf-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid #a08b6944;padding-bottom:17px}
+.restaurant-leaf-heading .guide-folio{margin:0!important;letter-spacing:.12em}
+.restaurant-page-label{font:10px/1.5 Arial,sans-serif;white-space:nowrap;color:#8b714e}
+.restaurant-leaf-body{flex:1;display:grid;grid-template-rows:1fr 1fr;gap:22px;padding:24px 0}
+.site-depth .restaurant-leaf .guide-address{margin:0;padding:20px;border:1px solid #ac956344;border-radius:16px;background:linear-gradient(145deg,#fffaf0,#e8dfcf);box-shadow:0 3px 0 #c5b69a,0 12px 22px #392d2218;display:flex;flex-direction:column;align-items:flex-start;justify-content:center}
+.site-depth .restaurant-leaf .guide-address+.guide-address{border-top:1px solid #ac956344}
+.restaurant-leaf .guide-address-top{justify-content:flex-start;gap:14px;margin-bottom:13px}
+.restaurant-leaf .guide-number{font:25px/1 Georgia,serif;color:#a98d60}
+.restaurant-leaf .guide-kind{line-height:1.6;max-width:180px}
+.restaurant-leaf .guide-address h4{font-size:clamp(23px,2vw,28px);line-height:1.12;letter-spacing:-.025em;color:#30362b;margin:0 0 12px}
+.restaurant-leaf .guide-address p{font-size:15px;line-height:1.55;max-width:430px;margin:0 0 12px}
+.restaurant-leaf .guide-address .guide-location{font:11px/1.6 Arial,sans-serif;color:#7a715f;margin:0 0 8px}
+.restaurant-leaf .guide-address a{font-size:12px;min-height:28px;align-items:center}
+.restaurant-leaf-note{font:10px/1.5 Arial,sans-serif!important;letter-spacing:.08em;color:#928575!important;border-top:1px solid #a08b6944;margin:0!important;padding-top:16px}
+.restaurant-back-leaf{display:flex;align-items:center;justify-content:center;background:linear-gradient(225deg,#ede4d4,#e1d4bd);color:#9a835d}
+.restaurant-end-mark{text-align:center;font:38px/1.2 Georgia,serif;opacity:.5}
+.restaurant-end-mark em{font-weight:400}
+@media(max-width:950px){.restaurant-leaf{padding:28px;min-height:690px}.restaurant-leaf-heading{flex-wrap:wrap}.restaurant-leaf .guide-address p{font-size:14px}}
+@media(max-width:760px){.restaurant-leaf{min-height:0;padding:24px}.restaurant-leaf-right{border-top:1px solid #a08b6955}.restaurant-leaf-body{gap:22px;padding:24px 0;grid-template-rows:auto auto}.restaurant-leaf .guide-address h4{font-size:27px}.restaurant-leaf .guide-address p{font-size:15px}.restaurant-leaf-note,.restaurant-back-leaf{display:none}.restaurant-leaf-heading{padding-bottom:14px}}
+
+@media(max-width:760px){.site-depth .restaurant-leaf .guide-address{padding:18px 15px}.restaurant-leaf .guide-address h4{font-size:25px}}
+
+/* La reliure reste au centre ; les feuillets pivotent autour de cet axe. */
+.guide-page:before{content:none}
+.restaurant-leaf-body>.guide-address:only-child{grid-row:1 / -1;align-self:start}
+
+/* Feuillet recto-verso en perspective, articulé sur la reliure centrale. */
+.guide-turn-layer{color:#252923;position:absolute;inset:0;z-index:8;perspective:2200px;pointer-events:none;isolation:isolate}
+.guide-turn-static,.guide-turn-sheet{position:absolute;top:0;width:50%;height:100%}
+.guide-turn-static{overflow:hidden;background:#e9e1d3}
+.guide-turn-static-left{left:0}.guide-turn-static-right{right:0}
+.guide-turn-sheet{z-index:3;transform-style:preserve-3d;will-change:transform}
+.guide-turn-sheet-forward{left:50%;transform-origin:left center}
+.guide-turn-sheet-backward{left:0;transform-origin:right center}
+.guide-turn-face{position:absolute;inset:0;overflow:hidden;background:#e9e1d3;backface-visibility:hidden;-webkit-backface-visibility:hidden;box-shadow:0 0 8px #392d220c}
+.guide-turn-back{transform:rotateY(180deg)}
+.guide-turn-face:after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,#392d2209,transparent 9%,transparent 94%,#fff8eb12)}
+.guide-turn-static>*,.guide-turn-face>*{width:100%!important;height:100%!important;min-height:100%!important;box-sizing:border-box}
+.guide-turn-layer .guide-page-art{min-height:100%;height:100%}
+@media(prefers-reduced-motion:reduce){.guide-turn-layer{display:none}}
+
+/* Une taille de livre stable, mesurée sur le contenu le plus haut. */
+.guide-book.guide-ready .guide-page{min-height:var(--guide-spread-height,690px)}
+.guide-book.guide-slider{transition:none}
+
+
+
+/* Encadrés identiques aux autres rubriques du carnet. */
+.restaurant-leaf-body{grid-template-rows:auto auto;align-content:center;gap:22px}
+.site-depth .restaurant-leaf .guide-address{min-height:240px;padding:20px;border:1px solid #ac956344;border-radius:16px;background:linear-gradient(145deg,#fffaf0,#e8dfcf);box-shadow:0 3px 0 #c5b69a,0 12px 22px #392d2218}
+.restaurant-leaf .guide-address-top{justify-content:space-between;gap:12px;margin:0}
+.restaurant-leaf .guide-number{font:14px Arial,sans-serif;color:#8f7650}
+.restaurant-leaf .guide-kind{font:10px Arial,sans-serif;letter-spacing:.16em;color:#8f7650}
+.restaurant-leaf .guide-address h4{font:23px/1.14 Georgia,serif;letter-spacing:normal;color:#252923;margin:7px 0 0}
+.restaurant-leaf .guide-address p{font:14px/1.48 Georgia,serif;color:#55594f;margin:6px 0 7px}
+.restaurant-leaf .guide-address a{display:inline-flex;gap:9px;border-bottom:1px solid #ab8a5c;padding-bottom:2px;color:#735836;font:12px/1.5 Arial,sans-serif}
+@media(max-width:760px){.site-depth .restaurant-leaf .guide-address{min-height:0;padding:18px 15px}}
