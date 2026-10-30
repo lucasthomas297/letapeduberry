@@ -590,6 +590,9 @@ p{margin:18px 0;color:var(--muted)}
 @media(max-width:760px){.js-enabled .mobile-nav-ready .navlinks>a{border-radius:8px}.nav .navlinks>a:active::before{height:100%;border-radius:8px}}
 @media(prefers-reduced-motion:reduce){.nav .navlinks>a,.nav .navlinks>a::before{transition:none}}
 
-/* Pas d’anneau doré sur la fermeture des photos ; repère clavier discret. */
-.lightbox .close:focus{outline:none}
-.lightbox .close:focus-visible{outline:none;box-shadow:inset 0 -2px #f4f0e5aa}
+/* La visionneuse et ses commandes ne dessinent aucun cadre de focus. */
+.lightbox:focus,.lightbox:focus-visible,
+.lightbox button:focus,.lightbox button:focus-visible{outline:none;box-shadow:none}
+
+/* Aucun contour ajouté aux miniatures au retour de la visionneuse. */
+.photo-open:focus,.photo-open:focus-visible{outline:none;box-shadow:none}
