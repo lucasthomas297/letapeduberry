@@ -580,3 +580,16 @@ p{margin:18px 0;color:var(--muted)}
 .lightbox-dragging .lightbox-viewport{overflow:visible}
 .lightbox-dragging .lightbox-slide[aria-hidden="true"]{visibility:hidden}
 .lightbox-dragging .lightbox-arrow,.lightbox-dragging .close,.lightbox-dragging #lightbox-caption{opacity:0;pointer-events:none}
+
+/* Navigation : même voile ascendant translucide que les filtres du guide. */
+.nav .navlinks>a{position:relative;isolation:isolate;overflow:hidden;border-radius:8px;transition:color .45s cubic-bezier(.4,0,.2,1);-webkit-tap-highlight-color:transparent}
+.nav .navlinks>a::before{content:'';position:absolute;z-index:-1;inset:auto 0 0;height:0;background:rgba(194,204,186,.17);box-shadow:inset 0 1px rgba(239,244,231,.1);border-radius:50px 50px 0 0;transition:height .8s cubic-bezier(.4,0,.2,1),border-radius .8s cubic-bezier(.4,0,.2,1);pointer-events:none}
+.nav .navlinks>a[aria-current="page"]::before,.nav .navlinks>a:focus-visible::before{height:100%;border-radius:8px}
+@media(min-width:761px){.nav .navlinks>a{padding-left:9px;padding-right:9px}}
+@media(hover:hover) and (pointer:fine){.nav .navlinks>a:hover::before{height:100%;border-radius:8px}}
+@media(max-width:760px){.js-enabled .mobile-nav-ready .navlinks>a{border-radius:8px}.nav .navlinks>a:active::before{height:100%;border-radius:8px}}
+@media(prefers-reduced-motion:reduce){.nav .navlinks>a,.nav .navlinks>a::before{transition:none}}
+
+/* Pas d’anneau doré sur la fermeture des photos ; repère clavier discret. */
+.lightbox .close:focus{outline:none}
+.lightbox .close:focus-visible{outline:none;box-shadow:inset 0 -2px #f4f0e5aa}
