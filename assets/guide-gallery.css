@@ -1,0 +1,90 @@
+/* Guide essentiel. Tous les styles sont limités à cette section. */
+.address-gallery{--guide-text:#f5f5f2;--guide-secondary:#a9afa9;max-width:1440px;margin:auto;padding:55px 4% 90px;color:var(--guide-text);font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif}
+.gallery-heading{display:block;max-width:850px;margin-bottom:38px}
+.gallery-heading .eyebrow{font:600 12px/1.4 -apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;letter-spacing:0;color:#a9afa9;text-transform:none;margin:0 0 15px}
+.gallery-heading h2{font:600 clamp(42px,5vw,72px)/1.04 -apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;letter-spacing:-.055em;margin:0;color:#f5f5f2}
+.gallery-heading>p{font:400 19px/1.5 -apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;color:#a9afa9;margin:22px 0 0;max-width:620px;letter-spacing:-.02em}
+.gallery-filters{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 32px;padding:5px;width:fit-content;max-width:100%;border:1px solid #ffffff0a;background:#ffffff07;border-radius:15px}
+.gallery-filters button{border:0;border-radius:10px;padding:11px 17px;min-height:44px;background:transparent;color:#afb6af;cursor:pointer;font:500 13px/1.3 -apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;letter-spacing:-.015em;transition:background .18s,color .18s}
+.gallery-filters button span{display:none}
+.gallery-filters button[aria-pressed=true]{background:#f3f4ef;color:#242a26;box-shadow:0 2px 5px #0002}
+.gallery-filters button:hover:not([aria-pressed=true]){background:#ffffff09;color:#fff}
+.gallery-filters button:focus-visible,.address-card a:focus-visible{outline:2px solid #d1b17e;outline-offset:4px}
+.gallery-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;align-items:stretch}
+.address-card{position:relative;display:flex;flex-direction:column;align-items:flex-start;min-width:0;padding:34px 32px 27px;min-height:285px;background:#f3f3ee;color:#272e29;border:0;border-radius:22px;box-shadow:none}
+.address-card[hidden]{display:none}
+.card-category{font:500 11px/1.4 -apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;letter-spacing:0;color:#7b847b;margin-bottom:32px;text-transform:none}
+.address-card .guide-address-top{display:none}
+.address-card h4{font:600 29px/1.08 -apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;letter-spacing:-.045em;color:#28312a;margin:0 0 15px}
+.address-card p{font:400 14px/1.6 -apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;letter-spacing:-.015em;color:#6c746d;margin:0 0 20px;max-width:48ch}
+.address-card .guide-location{font:400 11px/1.5 -apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;letter-spacing:0;color:#8b928a;margin:0 0 18px}
+.address-card .guide-address-links{margin-top:auto;display:flex;flex-wrap:wrap;gap:3px 22px}
+.address-card a{display:inline-flex;align-items:center;gap:8px;min-height:36px;border:0;color:#344f40;font:500 12px/1.4 -apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;text-decoration:none}
+.address-card>a{margin-top:auto}
+.address-card a:hover{color:#1f3025;text-decoration:underline;text-underline-offset:4px}
+.address-card a span{font-size:15px}
+.gallery-empty{color:#a9afa9}
+@media(min-width:1100px){.address-card:first-child{grid-column:span 2;padding:40px 42px;min-height:320px;background:#e1e6df}.address-card:first-child h4{font-size:43px;max-width:440px}.address-card:first-child p{font-size:16px;max-width:540px}.address-card:first-child .card-category{margin-bottom:35px}}
+@media(max-width:1099px){.gallery-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.address-card{padding:30px;min-height:300px}}
+@media(max-width:600px){.address-gallery{padding:35px 22px 55px}.gallery-heading{margin-bottom:27px}.gallery-heading h2{font-size:43px;letter-spacing:-.055em}.gallery-heading>p{font-size:17px;margin-top:18px}.gallery-heading>p br{display:none}.gallery-filters{flex-wrap:nowrap;width:auto;overflow:auto;scrollbar-width:none;margin-bottom:23px;border-radius:12px}.gallery-filters::-webkit-scrollbar{display:none}.gallery-filters button{flex:none;white-space:nowrap;padding:10px 14px;font-size:12px;border-radius:8px}.gallery-grid{grid-template-columns:1fr;gap:15px}.address-card{padding:29px;min-height:285px;border-radius:20px}.address-card h4{font-size:30px}.address-card p{font-size:15px}.card-category{margin-bottom:27px}.address-card a{min-height:44px;font-size:13px}}
+@media(prefers-reduced-motion:reduce){.gallery-filters button{transition:none}}
+
+/* Rythme et couleur : une mosaïque, sans changer les cinq filtres. */
+.address-card[data-category=bourges]{background:#e1e7dc}
+.address-card[data-category=restaurant]{background:#f0dfd2}
+.address-card[data-category=saveurs]{background:#e9e5c9}
+.address-card[data-category=sancerre]{background:#d9e7e4}
+.address-card .card-category{color:#596c5c}
+.address-card[data-category=restaurant] .card-category{color:#966a50}
+.address-card[data-category=saveurs] .card-category{color:#847538}
+.address-card[data-category=sancerre] .card-category{color:#527c77}
+.address-card[data-category=restaurant] a{color:#895439}
+.address-card[data-category=saveurs] a{color:#75642d}
+.address-card[data-category=sancerre] a{color:#3f716b}
+@media(min-width:1100px){
+.gallery-grid{grid-template-columns:repeat(6,minmax(0,1fr));gap:20px;align-items:start}
+.address-card{grid-column:span 2;min-height:300px}
+.address-card:first-child{grid-column:span 4;background:#dbe5d4;min-height:330px}
+.address-card:nth-child(2){min-height:330px}
+.address-card:nth-child(3){grid-column:span 3;min-height:300px}
+.address-card:nth-child(4){grid-column:span 3;min-height:300px;background:#e8cdbb}
+.address-card:nth-child(7){grid-column:span 2;background:#dfc8bb}
+.address-card:nth-child(8){grid-column:span 4;min-height:280px;background:#e4dfb9}
+.address-card:nth-child(9){grid-column:span 2;min-height:280px}
+.address-card:nth-child(10){grid-column:span 3;background:#e5d99d;min-height:315px}
+.address-card:nth-child(11){grid-column:span 3;min-height:315px;background:#cedfd5}
+.address-card:nth-child(12){grid-column:span 3;min-height:260px}
+.address-card:nth-child(13){grid-column:span 3;min-height:260px;background:#bfd6d3}
+.address-card:nth-child(3) h4,.address-card:nth-child(8) h4,.address-card:nth-child(10) h4{font-size:36px;max-width:400px}
+/* Après filtrage, redistribuer les cartes visibles sans trous. */
+.gallery-grid.is-filtered .address-card{grid-column:span 2;min-height:310px;padding:34px 32px}
+.gallery-grid.is-filtered .address-card:first-child{grid-column:span 4}
+.gallery-grid.is-filtered .address-card h4{font-size:30px}
+.gallery-grid.is-filtered .address-card:first-child h4{font-size:43px}
+}
+@media(min-width:601px) and (max-width:1099px){.address-card:nth-child(5n+1){grid-column:span 2;min-height:250px}.address-card:nth-child(5n+1) h4{font-size:36px}.gallery-grid.is-filtered .address-card{grid-column:span 1}.gallery-grid.is-filtered .address-card h4{font-size:29px}}
+@media(max-width:600px){.address-card:nth-child(3n+1){padding-top:38px;padding-bottom:36px}.address-card:nth-child(3n+1) h4{font-size:34px}.address-card:first-child{background:#dbe5d4}}
+
+/* Une seule teinte et une hauteur commune ; seules les largeurs varient. */
+.address-gallery .address-card,
+.address-gallery .address-card:first-child,
+.address-gallery .address-card:nth-child(n){background:#e7e9df}
+.address-gallery .address-card .card-category{color:#687263}
+.address-gallery .address-card a{color:#435c49}
+@media(min-width:1100px){
+.address-gallery .gallery-grid{align-items:stretch}
+.address-gallery .gallery-grid .address-card,
+.address-gallery .gallery-grid .address-card:nth-child(n){min-height:340px;height:100%;box-sizing:border-box;padding:32px}
+.address-gallery .gallery-grid .address-card h4{font-size:30px}
+}
+@media(min-width:601px) and (max-width:1099px){
+.address-gallery .gallery-grid{align-items:stretch}
+.address-gallery .gallery-grid .address-card{min-height:330px;height:100%;box-sizing:border-box;padding:30px}
+.address-gallery .gallery-grid .address-card h4{font-size:29px}
+}
+@media(max-width:600px){
+.address-gallery .gallery-grid .address-card{min-height:320px;box-sizing:border-box;padding:29px}
+.address-gallery .gallery-grid .address-card h4{font-size:30px}
+}
+@media(min-width:601px){.address-gallery .gallery-grid{grid-auto-rows:420px}.address-gallery .gallery-grid .address-card:nth-child(n){height:420px;min-height:0}}
+@media(max-width:600px){.address-gallery .gallery-grid .address-card:nth-child(n){height:420px;min-height:0}}
