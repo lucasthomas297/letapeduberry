@@ -169,3 +169,14 @@
 @media(min-width:761px){.guide-section{padding-top:30px}.guide-heading{margin-bottom:20px}.guide-chapters{margin-bottom:15px}.restaurant-leaf{padding-block:15px}.restaurant-leaf-heading{padding-bottom:8px}.restaurant-leaf-note{padding-top:8px}.restaurant-leaf-body{padding-block:12px;gap:12px}}
 
 .guide-book:focus-visible{outline:2px solid var(--gold);outline-offset:5px}
+
+/* Trois adresses réparties sur les deux feuillets, sans contenu coupé. */
+.guide-balanced-right{background:linear-gradient(225deg,#f6f0e5,#e8decb)}
+.guide-balanced-spread .guide-address{flex-shrink:0}
+@media(min-width:761px){
+.guide-balanced-spread .guide-page-content{justify-content:center;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#ab8a5c transparent}
+.guide-balanced-spread .guide-page-content>*{flex-shrink:0}
+.guide-balanced-spread .guide-page-content h3{margin:0}
+.guide-balanced-spread .guide-address:last-child{margin-bottom:0}
+}
+@media(max-width:760px){.guide-balanced-right{padding-top:0}.guide-balanced-left .guide-address{margin-bottom:0}}
