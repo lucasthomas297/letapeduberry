@@ -140,3 +140,32 @@
 .restaurant-leaf .guide-address p{font:14px/1.48 Georgia,serif;color:#55594f;margin:6px 0 7px}
 .restaurant-leaf .guide-address a{display:inline-flex;gap:9px;border-bottom:1px solid #ab8a5c;padding-bottom:2px;color:#735836;font:12px/1.5 Arial,sans-serif}
 @media(max-width:760px){.site-depth .restaurant-leaf .guide-address{min-height:0;padding:18px 15px}}
+
+/* Sur ordinateur, le livre et sa navigation tiennent dans la hauteur d’écran. */
+@media(min-width:761px){
+.guide-book.guide-ready .guide-page{height:var(--guide-spread-height,600px);min-height:0}
+.guide-page-art{height:100%;min-height:0}
+.guide-page-content{padding:20px 30px;min-height:0}
+.guide-folio{font-size:9px!important;margin-bottom:10px!important}
+.guide-page-content h3{font-size:33px;line-height:1.05}
+.guide-page-intro{font-size:12px!important;line-height:1.4!important;margin:9px 0 12px!important}
+.site-depth .guide-address{padding:12px 15px;margin-bottom:11px;border-radius:13px}
+.guide-address h4{font-size:20px;margin-top:5px}
+.guide-address p{font-size:12px;line-height:1.4;margin:5px 0}
+.guide-address-top{font-size:9px}
+.guide-address a{font-size:11px}
+.guide-address .guide-location{font-size:10px;margin:6px 0}
+.restaurant-leaf{height:100%;min-height:0;padding:20px 30px}
+.restaurant-leaf-heading{padding-bottom:10px}
+.restaurant-leaf-body{padding:16px 0;gap:15px;grid-template-rows:1fr 1fr;min-height:0}
+.site-depth .restaurant-leaf .guide-address{min-height:0;margin:0;padding:14px 18px}
+.restaurant-leaf .guide-address h4{font-size:22px}
+.restaurant-leaf .guide-address p{font-size:12px;line-height:1.4}
+.restaurant-leaf .guide-address a{font-size:11px;min-height:22px}
+.restaurant-leaf-note{padding-top:10px}
+.guide-controls{margin-top:20px}
+}
+
+@media(min-width:761px){.guide-section{padding-top:30px}.guide-heading{margin-bottom:20px}.guide-chapters{margin-bottom:15px}.restaurant-leaf{padding-block:15px}.restaurant-leaf-heading{padding-bottom:8px}.restaurant-leaf-note{padding-top:8px}.restaurant-leaf-body{padding-block:12px;gap:12px}}
+
+.guide-book:focus-visible{outline:2px solid var(--gold);outline-offset:5px}

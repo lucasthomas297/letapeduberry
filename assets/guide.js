@@ -9,6 +9,7 @@ if(book){
  const pointers=new Set();
  let turnLayer=null,turnAnimation=null;
  book.classList.add('guide-ready','guide-slider');
+ book.tabIndex=0;book.setAttribute('role','group');book.setAttribute('aria-label','Carnet d’adresses : utiliser les flèches gauche et droite pour feuilleter');
  pages.forEach(page=>{page.hidden=false;page.querySelectorAll('img').forEach(img=>{img.draggable=false;img.addEventListener('load',resize)})});
  function position(distance=0,duration=0){
   const width=book.clientWidth;
@@ -20,7 +21,7 @@ if(book){
  function resize(){
   if(animating||gesture)return;
   book.style.removeProperty('--guide-spread-height');
-  const height=Math.ceil(Math.max(...pages.map(page=>page.getBoundingClientRect().height)));
+  const height=innerWidth>760?Math.max(460,Math.min(680,innerHeight-300)):Math.ceil(Math.max(...pages.map(page=>page.getBoundingClientRect().height)));
   book.style.setProperty('--guide-spread-height',height+'px');
   book.style.height=height+'px';
  }
@@ -89,6 +90,7 @@ if(book){
  });
  book.addEventListener('pointerdown',event=>{
   if(animating||(event.pointerType==='mouse'&&event.button!==0))return;
+  if(!event.target.closest('a,button,input,select,textarea'))book.focus({preventScroll:true});
   pointers.add(event.pointerId);
   if(pointers.size>1){gesture=null;position();resize();return}
   gesture={id:event.pointerId,x:event.clientX,y:event.clientY,time:performance.now(),mode:'pending'};
