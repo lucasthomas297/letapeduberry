@@ -605,3 +605,9 @@ p{margin:18px 0;color:var(--muted)}
 .nav.nav-departing .navlinks>a.nav-clicked::before{height:100%;border-radius:8px}
 ::view-transition-old(site-navigation){opacity:0}
 ::view-transition-new(site-navigation){opacity:1}
+
+/* Téléphone : navigation sans animation de remplissage. */
+@media(max-width:760px){
+.nav .navlinks>a,.nav .navlinks>a::before{transition:none!important}
+.nav .navlinks>a::before{content:none!important}
+}
