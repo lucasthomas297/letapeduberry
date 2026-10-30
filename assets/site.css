@@ -596,3 +596,12 @@ p{margin:18px 0;color:var(--muted)}
 
 /* Aucun contour ajouté aux miniatures au retour de la visionneuse. */
 .photo-open:focus,.photo-open:focus-visible{outline:none;box-shadow:none}
+
+
+/* Ne pas capturer une animation de survol à mi-course lors du changement de page. */
+.nav .navlinks>a[aria-current="page"]::before{transition:none}
+.nav.nav-departing .navlinks>a,.nav.nav-departing .navlinks>a::before{transition:none!important}
+.nav.nav-departing .navlinks>a::before{height:0;border-radius:8px}
+.nav.nav-departing .navlinks>a.nav-clicked::before{height:100%;border-radius:8px}
+::view-transition-old(site-navigation){opacity:0}
+::view-transition-new(site-navigation){opacity:1}

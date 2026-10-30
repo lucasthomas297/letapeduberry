@@ -25,7 +25,22 @@
       header.classList.toggle('menu-open', open);
       toggle.setAttribute('aria-expanded', String(open));
     });
-    menu.addEventListener('click', event => { if (event.target.closest('a')) close(); });
+    const resetMenuAnimation = () => {
+      header.classList.remove('nav-departing');
+      menu.querySelectorAll('.nav-clicked').forEach(link => link.classList.remove('nav-clicked'));
+    };
+    window.addEventListener('pageshow', resetMenuAnimation);
+    menu.addEventListener('click', event => {
+      const link = event.target.closest('a[href]');
+      if (!link) return;
+      close();
+      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || link.target || link.hasAttribute('download')) return;
+      const target = new URL(link.href, location.href);
+      if (target.origin !== location.origin || (target.pathname === location.pathname && target.search === location.search)) return;
+      resetMenuAnimation();
+      header.classList.add('nav-departing');
+      link.classList.add('nav-clicked');
+    });
     document.addEventListener('keydown', event => { if (event.key === 'Escape' && header.classList.contains('menu-open')) { close(); toggle.focus(); } });
     document.addEventListener('click', event => { if (!header.contains(event.target)) close(); });
   }
