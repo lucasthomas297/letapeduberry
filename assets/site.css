@@ -611,3 +611,47 @@ p{margin:18px 0;color:var(--muted)}
 .nav .navlinks>a,.nav .navlinks>a::before{transition:none!important}
 .nav .navlinks>a::before{content:none!important}
 }
+
+/* Essai mobile : navigation flottante en verre translucide. */
+.dock-icon,.dock-label{display:none}
+@media(max-width:760px){
+body{padding-bottom:calc(100px + env(safe-area-inset-bottom,0px))}
+.js-enabled .mobile-nav-ready .mobile-menu-toggle{display:none}
+.js-enabled .mobile-nav-ready .navlinks,
+.js-enabled .mobile-nav-ready.menu-open .navlinks{position:fixed;z-index:100;left:50%;bottom:calc(12px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:0;width:calc(100% - 20px);max-width:560px;margin:0;padding:6px;border:1px solid #ffffff30;border-radius:32px;background:linear-gradient(150deg,#ffffff16,#ffffff05),rgba(35,43,38,.76);-webkit-backdrop-filter:blur(22px) saturate(160%);backdrop-filter:blur(22px) saturate(160%);box-shadow:inset 0 1px 0 #ffffff35,inset 0 -1px 0 #ffffff09,0 10px 35px #0004;white-space:normal;overflow:visible}
+.js-enabled .mobile-nav-ready .navlinks>a,
+.js-enabled .mobile-nav-ready .navlinks .mobile-reservation-link{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:5px;width:auto;height:58px;min-height:58px;min-width:0;align-self:stretch;padding:6px 1px;margin:0;border:0;border-radius:25px;background:transparent;box-shadow:none;color:#eeeFE9;font:500 9px/1.1 -apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;text-align:center}
+.navlinks .desktop-nav-label{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.navlinks .dock-label,.navlinks .dock-icon{display:block}.dock-icon svg{display:block;width:22px;height:22px}
+.js-enabled .mobile-nav-ready .navlinks>a.dock-current{background:linear-gradient(145deg,#ffffff23,#ffffff10);box-shadow:inset 0 1px #ffffff24,0 2px 8px #0001;color:#e6c18b}
+.js-enabled .mobile-nav-ready .navlinks>a:focus-visible{outline:2px solid #e6c18b;outline-offset:2px}
+.nav .navlinks>a::before{content:none!important}
+body:has(.address-gallery){padding-bottom:calc(168px + env(safe-area-inset-bottom,0px))}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.js-enabled .mobile-nav-ready .navlinks{background:#29332bf5}}
+}
+
+/* Barre mobile sur une seule ligne, libellés sans retour. */
+@media(max-width:760px){
+.js-enabled .mobile-nav-ready .navlinks,.js-enabled .mobile-nav-ready.menu-open .navlinks{grid-template-columns:repeat(7,minmax(0,1fr));flex-wrap:nowrap}
+.navlinks .dock-label{white-space:nowrap;font-size:9px;letter-spacing:-.025em}
+}
+
+/* Bulle mobile déplaçable au doigt, sans modifier le menu ordinateur. */
+.glass-selection{display:none}
+@media(max-width:760px){
+.js-enabled .mobile-nav-ready .navlinks,.js-enabled .mobile-nav-ready.menu-open .navlinks,.mobile-guide-filters{background:linear-gradient(150deg,#ffffff0e,#ffffff03),rgba(35,43,38,.42)}
+.glass-draggable{touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.glass-draggable .glass-selection{display:block;position:absolute;left:0;top:5px;height:calc(100% - 10px);border-radius:26px;z-index:0;pointer-events:none;background:linear-gradient(130deg,#ffffff24,#ffffff0b);border:1px solid #ffffff26;box-shadow:inset 0 1px #ffffff32,0 2px 8px #0001;transition:transform .24s cubic-bezier(.2,.8,.2,1),width .24s,opacity .15s;opacity:0;will-change:transform}
+.glass-draggable>a,.glass-draggable>button{position:relative;z-index:1}
+.glass-dragging .glass-selection{transition:width .15s;scale:1.06 1.08}
+.js-enabled .mobile-nav-ready .navlinks>a.dock-current,.mobile-guide-filters button[aria-pressed=true]{background:transparent;box-shadow:none}
+.mobile-guide-filters button::before{content:none}
+.mobile-guide-filters{isolation:isolate}
+}
+@media(prefers-reduced-motion:reduce){.glass-draggable .glass-selection{transition:none!important}}
+
+/* Les sept onglets, Réserver compris, occupent une seule rangée. */
+@media(max-width:760px){
+.js-enabled .mobile-nav-ready .navlinks .mobile-reservation-link{grid-column:auto;grid-row:1;order:7}
+.js-enabled .mobile-nav-ready .navlinks>a{grid-row:1}
+}
