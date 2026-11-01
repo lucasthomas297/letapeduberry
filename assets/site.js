@@ -41,7 +41,15 @@ if(form){
  const minDate=field=>{if(field!=='depart'||!arrival.value)return today;const next=fromISO(arrival.value);next.setDate(next.getDate()+minimumForDate(arrival.value));return iso(next)};
  const closeCalendar=()=>{calendar.hidden=true;if(activeDate)dateTriggers[activeDate].setAttribute('aria-expanded','false');activeDate=null};
  const closeGuests=()=>{guestMenu.hidden=true;guestTrigger.setAttribute('aria-expanded','false')};
- const placeCalendar=()=>{const rect=dateTriggers[activeDate].getBoundingClientRect();const left=Math.max(12,Math.min(rect.left,window.innerWidth-calendar.offsetWidth-12));const below=rect.bottom+8;const top=below+calendar.offsetHeight<=window.innerHeight-12?below:Math.max(12,rect.top-calendar.offsetHeight-8);calendar.style.left=left+'px';calendar.style.top=top+'px'};
+ // Position dans le formulaire : aucun recalcul ni inversion pendant le défilement.
+ form.append(calendar);
+ const placeCalendar=()=>{
+  if(!activeDate)return;
+  const rect=dateTriggers[activeDate].getBoundingClientRect(),anchor=form.getBoundingClientRect();
+  const viewportLeft=Math.max(12,Math.min(rect.left,window.innerWidth-calendar.offsetWidth-12));
+  calendar.style.left=(viewportLeft-anchor.left-form.clientLeft)+'px';
+  calendar.style.top=(rect.bottom-anchor.top-form.clientTop+8)+'px';
+ };
  const renderCalendar=()=>{
   const min=minDate(activeDate),selected=form.elements[activeDate].value;
   const year=viewMonth.getFullYear(),month=viewMonth.getMonth();
@@ -95,7 +103,6 @@ if(form){
  document.addEventListener('click',event=>{if(!calendar.hidden&&!calendar.contains(event.target)&&!Object.values(dateTriggers).some(trigger=>trigger.contains(event.target)))closeCalendar();if(!guestMenu.hidden&&!guestTrigger.parentElement.contains(event.target))closeGuests()});
  document.addEventListener('keydown',event=>{if(event.key==='Escape'){if(activeDate){const trigger=dateTriggers[activeDate];closeCalendar();trigger.focus()}else if(!guestMenu.hidden){closeGuests();guestTrigger.focus()}}});
  window.addEventListener('resize',()=>{if(activeDate)placeCalendar()});
- window.addEventListener('scroll',()=>{if(activeDate)placeCalendar()},{passive:true});
  [earlyArrival,lateDeparture].forEach(option=>option.addEventListener('change',()=>{estimate.hidden=true}));
  form.addEventListener('submit',async e=>{e.preventDefault();let nightlyPrice;try{({nightlyPrice}=await pricingReady);}catch{error.textContent='Impossible de charger les tarifs. Veuillez actualiser la page et réessayer.';error.hidden=false;estimate.hidden=true;requestPanel.hidden=true;return;}await loadAvailability();if(availabilityState!=='ready'||(arrival.value&&departure.value&&overlapsBusy(arrival.value,departure.value))){error.textContent=availabilityState!=='ready'?'Impossible de vérifier les disponibilités pour le moment. Veuillez réessayer.':'Ces dates ne sont plus disponibles. Choisissez une autre période.';error.hidden=false;estimate.hidden=true;requestPanel.hidden=true;return}if(!arrival.value||!departure.value||departure.value<=arrival.value){error.textContent=!arrival.value?'Choisissez votre date d’arrivée.':!departure.value?'Choisissez votre date de départ.':'Le départ doit être après l’arrivée.';error.hidden=false;estimate.hidden=true;requestPanel.hidden=true;openCalendar(!arrival.value?'arrivee':'depart');return}if((Date.parse(departure.value)-Date.parse(arrival.value))/86400000<minimumForDate(arrival.value)){error.textContent=`Le séjour doit comprendre au moins ${minimumForDate(arrival.value)} nuit${minimumForDate(arrival.value)>1?'s':''}.`;error.hidden=false;estimate.hidden=true;requestPanel.hidden=true;openCalendar('depart');return}error.hidden=true;updateGuarantee();const start=fromISO(arrival.value),end=fromISO(departure.value);let fixed=0,flex=0,nights=0;for(let d=new Date(start);d<end;d.setDate(d.getDate()+1)){const night=iso(d);fixed+=nightlyPrice(night,'fixed')/100;flex+=nightlyPrice(night,'flex')/100;nights++}const extras=(earlyArrival.checked?10:0)+(lateDeparture.checked?5:0);fixed+=extras;flex+=extras;const selected=[earlyArrival.checked?'arrivée dès 14 h (+ 10 €)':null,lateDeparture.checked?'départ jusqu’à 12 h (+ 5 €)':null].filter(Boolean);const euro=n=>n.toLocaleString('fr-FR')+' €';estimate.innerHTML=`<strong>Votre séjour · ${nights} nuit${nights>1?'s':''} · ${guestInput.value}</strong><p>Non remboursable : <strong>${euro(fixed)}</strong> · Remboursable : <strong>${euro(flex)}</strong></p>${selected.length?`<p>Options incluses : ${selected.join(' · ')}.</p>`:''}<p>Ménage et taxe de séjour compris. Annulation du tarif remboursable jusqu’à 24 h avant l’arrivée.</p><p>Estimation du tarif uniquement. Disponibilité et horaires à confirmer auprès de nous.</p>`;estimate.hidden=false;requestPanel.hidden=!(requestServiceReady||localRequestPreview);estimate.scrollIntoView({behavior:'smooth',block:'nearest'});
  });

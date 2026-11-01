@@ -655,3 +655,44 @@ body:has(.address-gallery){padding-bottom:calc(168px + env(safe-area-inset-botto
 .js-enabled .mobile-nav-ready .navlinks .mobile-reservation-link{grid-column:auto;grid-row:1;order:7}
 .js-enabled .mobile-nav-ready .navlinks>a{grid-row:1}
 }
+
+/* Verre fumé : bord poli, reflets périphériques et lentille bombée. */
+@media(max-width:760px){
+.js-enabled .mobile-nav-ready .navlinks,
+.js-enabled .mobile-nav-ready.menu-open .navlinks,
+.mobile-guide-filters{
+ border:1px solid rgba(255,255,255,.2);
+ background:linear-gradient(175deg,rgba(229,232,242,.14),rgba(129,133,145,.07) 48%,rgba(221,224,233,.12)),rgba(42,43,48,.3);
+ -webkit-backdrop-filter:blur(14px) saturate(150%);
+ backdrop-filter:blur(14px) saturate(150%);
+ box-shadow:inset 0 1px 1px rgba(255,255,255,.32),inset 0 -1px 1px rgba(255,255,255,.15),inset 1px 0 1px rgba(255,255,255,.12),0 8px 24px rgba(0,0,0,.2);
+}
+.glass-draggable .glass-selection{
+ top:3px;height:calc(100% - 6px);border-radius:999px;
+ border:1px solid rgba(255,255,255,.42);
+ background:radial-gradient(ellipse at 18% 10%,rgba(255,255,255,.25),transparent 43%),radial-gradient(ellipse at 82% 90%,rgba(201,218,238,.12),transparent 48%),linear-gradient(165deg,rgba(245,248,255,.12),rgba(28,34,43,.1) 45%,rgba(9,13,22,.2));
+ -webkit-backdrop-filter:blur(2px) saturate(185%) brightness(1.12);
+ backdrop-filter:blur(2px) saturate(185%) brightness(1.12);
+ box-shadow:inset 0 2px 2px rgba(255,255,255,.5),inset 2px 0 3px rgba(197,224,255,.2),inset -2px 0 3px rgba(230,214,255,.16),inset 0 -3px 4px rgba(3,9,22,.38),0 2px 5px rgba(0,0,0,.25);
+ transition:transform .3s cubic-bezier(.16,.9,.2,1),width .25s,opacity .15s,scale .2s;
+}
+.glass-selection::before{content:'';position:absolute;inset:-1px;border-radius:inherit;padding:1px;background:conic-gradient(from 25deg,rgba(255,255,255,.55),rgba(171,214,249,.2),rgba(195,180,247,.16),rgba(255,239,187,.25),rgba(255,255,255,.55),rgba(176,229,233,.25),rgba(255,255,255,.55));-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);mask-composite:exclude;pointer-events:none}
+.glass-selection::after{content:'';position:absolute;inset:3px 9px auto;height:18%;border-radius:50%;background:linear-gradient(rgba(255,255,255,.2),transparent);pointer-events:none}
+.glass-dragging .glass-selection{scale:1.12 1.22;box-shadow:inset 0 2px 3px rgba(255,255,255,.65),inset 3px 0 5px rgba(142,216,255,.25),inset -3px 0 5px rgba(209,185,255,.22),inset 0 -4px 5px rgba(0,8,22,.5),0 3px 10px rgba(0,0,0,.3)}
+.js-enabled .mobile-nav-ready .navlinks>a.dock-current,.mobile-guide-filters button[aria-pressed=true]{color:#f0d4a5;text-shadow:0 1px 5px rgba(0,0,0,.15)}
+}
+@media(prefers-reduced-transparency:reduce){
+.js-enabled .mobile-nav-ready .navlinks,.mobile-guide-filters{background:#34363bf5}
+}
+
+/* Avec la navigation en bas, le bandeau mobile devient une signature centrée. */
+@media(max-width:760px){
+.nav.mobile-nav-ready{justify-content:center;gap:0;padding:23px 20px 21px}
+.nav.mobile-nav-ready .brand{display:block;text-align:center;margin:0 auto;font-size:clamp(20px,5.6vw,26px);letter-spacing:.055em}
+.nav.mobile-nav-ready .brand span{text-align:center;font-size:8px;letter-spacing:.16em;margin-top:7px}
+}
+
+
+/* Calendrier attaché au formulaire, sans bascule au défilement. */
+.booking{position:relative}
+.booking .calendar-popover{position:absolute;z-index:110;transition:none}
