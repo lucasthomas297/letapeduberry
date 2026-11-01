@@ -1,0 +1,11 @@
+/* Introduction allégée, sans modifier les équipements et détails utiles. */
+.apartment-page .apartment-hero-copy .apartment-lead{max-width:500px;line-height:1.7}
+.apartment-page .apartment-story{padding-top:15px;padding-bottom:70px}
+.apartment-page .apartment-story>div:last-child p{font-size:17px;line-height:1.75}
+.apartment-page .apartment-detail p{font-size:17px;line-height:1.7}
+@media(max-width:760px){.apartment-page .apartment-story{padding-top:0;padding-bottom:38px}.apartment-page .apartment-story>div:last-child p,.apartment-page .apartment-detail p{font-size:16px}}
+
+/* Les deux colonnes commencent sur le même axe. */
+.apartment-page .apartment-story{align-items:start}
+.apartment-page .apartment-story>div>p:first-child{margin-top:0}
+.apartment-page .apartment-story>div:last-child{padding-top:0;align-self:start}

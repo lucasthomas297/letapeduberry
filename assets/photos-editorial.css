@@ -59,3 +59,6 @@
 .photos-editorial .photos-page{padding-top:22px}
 .photos-intro{padding-top:0}
 @media(max-width:760px){.photos-editorial .photos-page{padding-top:17px}.photos-intro{padding-top:0}}
+
+/* Titre accessible, sans mention ni séparateur visibles avant les photos. */
+.photos-page-heading{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;margin:0;padding:0}
