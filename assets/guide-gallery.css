@@ -137,3 +137,4 @@
 .gallery-filters button .filter-full-label{display:inline;opacity:1;font:inherit}
 .gallery-filters button .filter-short-label{display:none}
 @media(max-width:760px){.gallery-filters button .filter-full-label{position:absolute;width:1px;height:1px;clip-path:inset(50%);overflow:hidden}.gallery-filters button .filter-short-label{display:inline;font:inherit;opacity:1}}
+@media(max-width:760px){.gallery-filters.mobile-guide-filters.glass-draggable>button[aria-pressed=true]{background:transparent;box-shadow:none}}

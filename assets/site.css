@@ -696,3 +696,19 @@ body:has(.address-gallery){padding-bottom:calc(168px + env(safe-area-inset-botto
 /* Calendrier attaché au formulaire, sans bascule au défilement. */
 .booking{position:relative}
 .booking .calendar-popover{position:absolute;z-index:110;transition:none}
+
+/* Une seule lentille : suivi direct pendant le geste, sans traînée. */
+@media(max-width:760px){
+.glass-draggable.glass-dragging .glass-selection{transition:none!important;scale:1.08 1.12}
+.glass-draggable .glass-selection{-webkit-backdrop-filter:none;backdrop-filter:none}
+.glass-draggable .glass-selection::before{content:none}
+.glass-selection{border-color:rgba(255,255,255,.38)}
+.js-enabled .mobile-nav-ready .navlinks.glass-draggable>a.dock-current{background:transparent!important;box-shadow:none!important}
+}
+
+/* Fond de barre plus présent ; la lentille conserve ses réglages. */
+@media(max-width:760px){
+.js-enabled .mobile-nav-ready .navlinks,
+.js-enabled .mobile-nav-ready.menu-open .navlinks,
+.mobile-guide-filters{background:linear-gradient(175deg,rgba(229,232,242,.14),rgba(129,133,145,.07) 48%,rgba(221,224,233,.12)),rgba(42,43,48,.55)}
+}

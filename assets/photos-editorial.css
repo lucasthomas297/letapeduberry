@@ -32,3 +32,30 @@
 
 /* Conserver les inscriptions de la photo 10 dans le cadre. */
 .photos-editorial .photo-cluster .photo-with-labels img{object-fit:cover;object-position:left center;padding:0;transform:none}
+
+/* Une seule introduction, suivie directement des photos. */
+.photos-intro{display:flex;align-items:flex-end;justify-content:space-between;gap:40px;padding:24px 0 32px;margin-bottom:27px;border-bottom:1px solid #d1ad762c}
+.photos-intro-label{font:10px/1.5 Arial,sans-serif;letter-spacing:.17em;color:var(--gold);margin:0 0 18px}
+.photos-intro .title{font:400 clamp(42px,5.5vw,76px)/1.02 Georgia,serif;letter-spacing:-.045em;margin:0}
+.photos-intro .title em{color:var(--gold);font-weight:400}
+.photos-intro-text{max-width:350px;font:15px/1.7 Arial,sans-serif;color:var(--muted);margin:0 0 4px}
+.photos-page .apartment-photo-group{margin-top:0}
+.apartment-photo-group>.visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;margin:0;padding:0}
+.photos-editorial .photo-chapter h3{font-size:11px;letter-spacing:.13em;margin-bottom:18px;color:#b9b8a9}
+@media(max-width:760px){
+.photos-intro{display:block;padding:22px 0 25px;margin-bottom:23px}
+.photos-intro-label{font-size:9px;margin-bottom:13px}
+.photos-intro .title{font-size:43px;line-height:1.04;margin:0}
+.photos-intro-text{font-size:13px;line-height:1.6;margin:18px 0 0;max-width:300px}
+.photos-editorial .photo-chapter h3{font-size:10px;letter-spacing:.11em;margin-bottom:15px}
+}
+
+/* Introduction réduite au seul intitulé demandé. */
+.photos-intro{display:block;padding:20px 0 22px;margin-bottom:22px}
+.photos-intro .photos-intro-label{font:400 11px/1.5 Arial,sans-serif;letter-spacing:.17em;color:var(--gold);margin:0}
+@media(max-width:760px){.photos-intro{padding:18px 0 20px;margin-bottom:20px}.photos-intro .photos-intro-label{font-size:10px}}
+
+/* Rapprocher la mention de galerie du bandeau du site. */
+.photos-editorial .photos-page{padding-top:22px}
+.photos-intro{padding-top:0}
+@media(max-width:760px){.photos-editorial .photos-page{padding-top:17px}.photos-intro{padding-top:0}}
