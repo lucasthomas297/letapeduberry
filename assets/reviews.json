@@ -1,7 +1,17 @@
 {
-  "checked_at": "2026-10-13",
+  "checked_at": "2026-11-08",
   "source": "https://www.airbnb.fr/rooms/1616590647208175191",
   "reviews": [
+    {
+      "author": "Ophélie",
+      "rating": 5,
+      "source_id": "1814350559660342115",
+      "text": "Nous avons passé un excellent séjour ! Le logement était impeccable, très propre, bien entretenu et parfaitement conforme à la description, facile d’accès et sécurisé. […]",
+      "excerpt": true,
+      "date": "2026-11",
+      "lang": "fr",
+      "original_date_label": "Aujourd’hui"
+    },
     {
       "author": "Lorenzo",
       "rating": 5,
