@@ -1,7 +1,17 @@
 {
-  "checked_at": "2026-11-08",
+  "checked_at": "2026-11-23",
   "source": "https://www.airbnb.fr/rooms/1616590647208175191",
   "reviews": [
+    {
+      "author": "Mohamed-Aymenn",
+      "rating": 5,
+      "source_id": "1487266767580511946",
+      "text": "Très bien placé, fonctionnel, propre, bien équipé. Je recommande.",
+      "excerpt": false,
+      "date": "2026-11",
+      "lang": "fr",
+      "original_date_label": "Il y a 4 jours"
+    },
     {
       "author": "Ophélie",
       "rating": 5,
